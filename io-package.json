@@ -1,0 +1,106 @@
+{
+	"common": {
+		"name": "liebherr",
+		"version": "0.0.1",
+		"news": {
+			"0.0.1": {
+				"en": "initial release",
+				"de": "Erstveröffentlichung",
+				"ru": "Начальная версия",
+				"pt": "lançamento inicial",
+				"nl": "Eerste uitgave",
+				"fr": "Première version",
+				"it": "Versione iniziale",
+				"es": "Versión inicial",
+				"pl": "Pierwsze wydanie",
+				"uk": "Початкова версія",
+				"zh-cn": "首次出版"
+			}
+		},
+		"titleLang": {
+			"en": "Liebherr SmartDevice",
+			"de": "Liebherr SmartDevice",
+			"ru": "Смарт-устройство Либхерр",
+			"pt": "Liebherr SmartDevice",
+			"nl": "Liebherr SmartDevice",
+			"fr": "Appareil intelligent Liebherr",
+			"it": "Liebherr SmartDevice",
+			"es": "Dispositivo inteligente Liebherr",
+			"pl": "Inteligentne urządzenie Liebherr",
+			"uk": "Liebherr SmartDevice",
+			"zh-cn": "利勃海尔智能设备"
+		},
+		"desc": {
+			"en": "Connects Liebherr refrigerators and freezers using the official SmartDevice HomeAPI",
+			"de": "Verbindet Liebherr-Kühl- und Gefrierschränke über die offizielle SmartDevice HomeAPI",
+			"ru": "Подключает холодильники и морозильники Liebherr с помощью официального SmartDevice HomeAPI.",
+			"pt": "Conecta refrigeradores e freezers Liebherr usando o SmartDevice HomeAPI oficial",
+			"nl": "Verbindt Liebherr koelkasten en vriezers met behulp van de officiële SmartDevice HomeAPI",
+			"fr": "Connecte les réfrigérateurs et congélateurs Liebherr à l'aide de l'API officielle SmartDevice HomeAPI",
+			"it": "Collega frigoriferi e congelatori Liebherr utilizzando la SmartDevice HomeAPI ufficiale",
+			"es": "Conecta refrigeradores y congeladores Liebherr mediante la SmartDevice HomeAPI oficial",
+			"pl": "Łączy lodówki i zamrażarki Liebherr za pomocą oficjalnego SmartDevice HomeAPI",
+			"uk": "Підключає холодильники та морозильні камери Liebherr за допомогою офіційного SmartDevice HomeAPI",
+			"zh-cn": "使用官方 SmartDevice HomeAPI 连接利勃海尔冰箱和冰柜"
+		},
+		"authors": ["Gaspode69 <45949835+Gaspode69@users.noreply.github.com>"],
+		"keywords": ["liebherr", "smartdevice", "refrigerator", "freezer", "homeapi"],
+		"licenseInformation": {
+			"type": "free",
+			"license": "MIT"
+		},
+		"platform": "Javascript/Node.js",
+		"icon": "liebherr.png",
+		"enabled": true,
+		"extIcon": "https://raw.githubusercontent.com/Gaspode69/ioBroker.liebherr/main/admin/liebherr.png",
+		"readme": "https://github.com/Gaspode69/ioBroker.liebherr/blob/main/README.md",
+		"loglevel": "info",
+		"tier": 3,
+		"mode": "daemon",
+		"type": "household",
+		"compact": true,
+		"connectionType": "cloud",
+		"dataSource": "poll",
+		"adminUI": {
+			"config": "json"
+		},
+		"dependencies": [
+			{
+				"js-controller": ">=6.0.11"
+			}
+		],
+		"globalDependencies": [
+			{
+				"admin": ">=7.0.23"
+			}
+		]
+	},
+	"native": {
+		"option1": true,
+		"option2": "42"
+	},
+	"objects": [],
+	"instanceObjects": [
+		{
+			"_id": "info",
+			"type": "channel",
+			"common": {
+				"name": "Information"
+			},
+			"native": {}
+		},
+		{
+			"_id": "info.connection",
+			"type": "state",
+			"common": {
+				"role": "indicator.connected",
+				"name": "Device or service connected",
+				"type": "boolean",
+				"read": true,
+				"write": false,
+				"def": false
+			},
+			"native": {}
+		}
+	]
+}
