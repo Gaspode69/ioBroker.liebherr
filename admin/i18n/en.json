@@ -1,5 +1,8 @@
 {
 	"liebherr adapter settings": "Adapter settings for liebherr",
-	"option1": "option1",
-	"option2": "option2"
+	"API key": "API key",
+	"Liebherr SmartDevice HomeAPI key": "Liebherr SmartDevice HomeAPI key",
+	"Polling interval": "Polling interval",
+	"Time between HomeAPI updates in seconds": "Time between HomeAPI updates in seconds",
+	"seconds": "seconds"
 }

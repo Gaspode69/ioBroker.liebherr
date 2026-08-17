@@ -1,5 +1,8 @@
 {
+	"API key": "API 密钥",
+	"Liebherr SmartDevice HomeAPI key": "Liebherr SmartDevice HomeAPI 密钥",
+	"Polling interval": "轮询间隔",
+	"Time between HomeAPI updates in seconds": "HomeAPI 更新之间的秒数",
 	"liebherr adapter settings": "liebherr的适配器设置",
-	"option1": "选项1",
-	"option2": "选项2"
+	"seconds": "秒"
 }

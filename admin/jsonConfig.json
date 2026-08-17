@@ -2,25 +2,31 @@
 	"i18n": true,
 	"type": "panel",
 	"items": {
-		"option1": {
-			"type": "checkbox",
-			"label": "option1",
+		"apiKey": {
+			"type": "password",
+			"label": "API key",
+			"help": "Liebherr SmartDevice HomeAPI key",
 			"newLine": true,
 			"xs": 12,
 			"sm": 12,
-			"md": 6,
-			"lg": 4,
-			"xl": 4
+			"md": 12,
+			"lg": 8,
+			"xl": 6
 		},
-		"option2": {
-			"type": "text",
-			"label": "option2",
+		"pollingInterval": {
+			"type": "number",
+			"label": "Polling interval",
+			"help": "Time between HomeAPI updates in seconds",
+			"min": 30,
+			"max": 86400,
+			"step": 1,
 			"newLine": true,
 			"xs": 12,
 			"sm": 12,
 			"md": 6,
 			"lg": 4,
-			"xl": 4
+			"xl": 4,
+			"unit": "seconds"
 		}
 	}
 }

@@ -1,5 +1,8 @@
 {
+	"API key": "API-sleutel",
+	"Liebherr SmartDevice HomeAPI key": "Liebherr SmartDevice HomeAPI-sleutel",
+	"Polling interval": "Pollinginterval",
+	"Time between HomeAPI updates in seconds": "Tijd tussen HomeAPI-updates in seconden",
 	"liebherr adapter settings": "Adapterinstellingen voor liebherr",
-	"option1": "optie1",
-	"option2": "optie2"
+	"seconds": "seconden"
 }

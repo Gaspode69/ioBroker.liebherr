@@ -1,5 +1,8 @@
 {
+	"API key": "Chiave API",
+	"Liebherr SmartDevice HomeAPI key": "Chiave Liebherr SmartDevice HomeAPI",
+	"Polling interval": "Intervallo di polling",
+	"Time between HomeAPI updates in seconds": "Tempo tra gli aggiornamenti HomeAPI in secondi",
 	"liebherr adapter settings": "Impostazioni dell'adattatore per liebherr",
-	"option1": "opzione1",
-	"option2": "opzione2"
+	"seconds": "secondi"
 }
