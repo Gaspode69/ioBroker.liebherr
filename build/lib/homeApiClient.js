@@ -144,13 +144,51 @@ class HomeApiClient {
   async getControls(deviceId) {
     return parseControls(await this.get(`/v1/devices/${encodeURIComponent(deviceId)}/controls`));
   }
+  /**
+   * Sets the target temperature of one appliance zone.
+   *
+   * @param deviceId Appliance identifier returned by getDevices.
+   * @param request Validated temperature request.
+   */
+  async setTemperature(deviceId, request) {
+    await this.post(`/v1/devices/${encodeURIComponent(deviceId)}/controls/temperature`, request);
+  }
+  /**
+   * Sets one supported boolean appliance control.
+   *
+   * @param deviceId Appliance identifier returned by getDevices.
+   * @param controlName Capability name returned by getControls.
+   * @param request Validated toggle request.
+   */
+  async setToggle(deviceId, controlName, request) {
+    await this.post(
+      `/v1/devices/${encodeURIComponent(deviceId)}/controls/${encodeURIComponent(controlName)}`,
+      request
+    );
+  }
   async get(path) {
+    const response = await this.request(path, { method: "GET" });
+    try {
+      return await response.json();
+    } catch {
+      throw new LiebherrResponseError("The HomeAPI returned invalid JSON");
+    }
+  }
+  async post(path, body) {
+    await this.request(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+  }
+  async request(path, init) {
     let response;
     try {
       response = await this.fetch(`${this.baseUrl}${path}`, {
-        method: "GET",
+        ...init,
         headers: {
           Accept: "application/json",
+          ...init.headers,
           "api-key": this.apiKey
         },
         signal: AbortSignal.timeout(this.requestTimeoutMs)
@@ -165,11 +203,7 @@ class HomeApiClient {
         parseRetryAfter(response.headers.get("retry-after"))
       );
     }
-    try {
-      return await response.json();
-    } catch {
-      throw new LiebherrResponseError("The HomeAPI returned invalid JSON");
-    }
+    return response;
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

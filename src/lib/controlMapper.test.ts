@@ -3,7 +3,7 @@ import { mapControl, reconcileDeviceIds, toIdSegment } from './controlMapper';
 import type { LiebherrControl } from './homeApiClient';
 
 describe('control mapping', () => {
-	it('maps a temperature capability and all reported metadata as read-only states', () => {
+	it('maps a temperature capability with only its target writable', () => {
 		const mapping = mapControl({
 			type: 'TemperatureControl',
 			name: 'temperature',
@@ -26,10 +26,22 @@ describe('control mapping', () => {
 		expect(targetTemperature?.value).to.equal(-18);
 		expect(targetTemperature?.common.min).to.equal(-26);
 		expect(targetTemperature?.common.max).to.equal(-15);
+		expect(targetTemperature?.common.write).to.equal(true);
+		expect(targetTemperature?.native).to.deep.include({
+			controlName: 'temperature',
+			controlType: 'TemperatureControl',
+			zoneId: 1,
+			unit: '°C',
+			min: -26,
+			max: -15,
+			setTemperatureStepsEnabled: true,
+		});
 		expect(mapping?.states.find(state => state.id === 'setTemperatureSteps')?.value).to.equal(
 			'[-26,-24,-22,-20,-18,-16,-15]',
 		);
-		expect(mapping?.states.every(state => state.common.write === false)).to.equal(true);
+		expect(
+			mapping?.states.filter(state => state.id !== 'targetTemperature').every(state => !state.common.write),
+		).to.equal(true);
 	});
 
 	it('keeps multiple temperature zones independent', () => {
@@ -67,7 +79,17 @@ describe('control mapping', () => {
 			controlName: 'nightmode',
 			controlType: 'ToggleControl',
 		});
-		expect(superCool?.states[0].common.write).to.equal(false);
+		expect(superCool?.states[0].common.write).to.equal(true);
+		expect(nightMode?.states[0].common.write).to.equal(true);
+	});
+
+	it('keeps toggles without a documented write schema read-only', () => {
+		const unknownToggle = mapControl({ type: 'ToggleControl', name: 'futuremode', value: false });
+		const superFrostWithoutZone = mapControl({ type: 'ToggleControl', name: 'superfrost', value: false });
+
+		expect(unknownToggle?.states[0].common.write).to.equal(false);
+		expect(unknownToggle?.states[0].common.role).to.equal('indicator');
+		expect(superFrostWithoutZone?.states[0].common.write).to.equal(false);
 	});
 
 	it('ignores unknown future and malformed known controls safely', () => {

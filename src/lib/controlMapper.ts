@@ -1,4 +1,5 @@
 import type { LiebherrControl, TemperatureControl, ToggleControl } from './homeApiClient';
+import { isWritableToggleControl } from './writeController';
 
 /** Read-only ioBroker state produced from a HomeAPI capability. */
 export interface MappedState {
@@ -90,6 +91,19 @@ export function mapControl(control: LiebherrControl): ControlMapping | undefined
 		);
 		targetTemperature.common.min = control.min;
 		targetTemperature.common.max = control.max;
+		targetTemperature.common.role = 'level.temperature';
+		targetTemperature.common.write = true;
+		targetTemperature.native = {
+			controlName: control.name,
+			controlType: control.type,
+			zoneId: control.zoneId,
+			...(control.zonePosition !== undefined ? { zonePosition: control.zonePosition } : {}),
+			unit: control.unit,
+			min: control.min,
+			max: control.max,
+			setTemperatureStepsEnabled: control.setTemperatureStepsEnabled === true,
+			...(Array.isArray(control.setTemperatureSteps) ? { setTemperatureSteps: control.setTemperatureSteps } : {}),
+		};
 		const states: MappedState[] = [
 			temperatureState('temperature', 'Current temperature', control.value, control.unit),
 			targetTemperature,
@@ -145,6 +159,7 @@ export function mapControl(control: LiebherrControl): ControlMapping | undefined
 	}
 
 	if (isToggleControl(control)) {
+		const writable = isWritableToggleControl(control.name, control.zoneId);
 		return {
 			scope: 'device',
 			zoneId: isFiniteNumber(control.zoneId) ? control.zoneId : undefined,
@@ -155,9 +170,9 @@ export function mapControl(control: LiebherrControl): ControlMapping | undefined
 					common: {
 						name: control.name,
 						type: 'boolean',
-						role: 'indicator',
+						role: writable ? 'switch' : 'indicator',
 						read: true,
-						write: false,
+						write: writable,
 					},
 					value: control.value,
 					native: {

@@ -12,10 +12,17 @@ import {
 	type LiebherrDevice,
 } from './lib/homeApiClient';
 import { calculateRetryDelay } from './lib/retry';
+import {
+	ControlValidationError,
+	processStateWrite,
+	type ControlWrite,
+	type WritableControl,
+} from './lib/writeController';
 
 const DEFAULT_POLLING_INTERVAL_SECONDS = 60;
 const MIN_POLLING_INTERVAL_SECONDS = 30;
 const MAX_POLLING_INTERVAL_SECONDS = 86_400;
+const CONTROL_READBACK_DELAY_MS = 2_000;
 
 /** ioBroker adapter for read-only Liebherr SmartDevice HomeAPI integration. */
 class Liebherr extends utils.Adapter {
@@ -24,6 +31,9 @@ class Liebherr extends utils.Adapter {
 	private pollingIntervalMs = DEFAULT_POLLING_INTERVAL_SECONDS * 1000;
 	private consecutiveFailures = 0;
 	private readonly knownDevices = new Map<string, string>();
+	private readonly writableControls = new Map<string, WritableControl>();
+	private readonly subscribedWritableStates = new Set<string>();
+	private readonly writesInProgress = new Set<string>();
 	private unloading = false;
 
 	/** @param options Adapter startup options supplied by js-controller. */
@@ -33,6 +43,7 @@ class Liebherr extends utils.Adapter {
 			name: 'liebherr',
 		});
 		this.on('ready', this.onReady.bind(this));
+		this.on('stateChange', this.onStateChange.bind(this));
 		this.on('unload', this.onUnload.bind(this));
 	}
 
@@ -138,6 +149,7 @@ class Liebherr extends utils.Adapter {
 		for (const missingDeviceId of reconciliation.missing) {
 			const deviceKey = this.knownDevices.get(missingDeviceId);
 			if (deviceKey) {
+				await this.disableDeviceWrites(deviceKey);
 				await this.updateState(
 					`devices.${deviceKey}.info.available`,
 					'Device available',
@@ -152,30 +164,47 @@ class Liebherr extends utils.Adapter {
 		for (const device of devices) {
 			const deviceKey = await this.updateDevice(device);
 			try {
-				const controls = await client.getControls(device.deviceId);
-				for (const control of controls) {
-					const mapping = mapControl(control);
-					if (!mapping) {
-						this.log.debug(
-							`Unsupported or malformed control type "${control.type}" (${control.name}) ignored`,
-						);
-						continue;
-					}
-
-					if (mapping.scope === 'zone' && mapping.zoneId !== undefined) {
-						await this.updateZoneControl(deviceKey, mapping.zoneId, mapping.zonePosition, mapping.states);
-					} else {
-						await this.updateDeviceControl(deviceKey, mapping.states);
-					}
-				}
+				await this.syncDeviceControls(device.deviceId, deviceKey);
 			} catch (error) {
 				errors.push(error);
+				await this.disableDeviceWrites(deviceKey);
 				await this.setState(`devices.${deviceKey}.info.available`, { val: false, ack: true });
 				this.logApiError(error, `reading controls for device ${device.deviceId}`);
 			}
 		}
 
 		return errors;
+	}
+
+	private async syncDeviceControls(deviceId: string, deviceKey: string): Promise<void> {
+		const client = this.client;
+		if (!client) {
+			throw new LiebherrNetworkError();
+		}
+
+		const controls = await client.getControls(deviceId);
+		const seenWritableIds = new Set<string>();
+		for (const control of controls) {
+			const mapping = mapControl(control);
+			if (!mapping) {
+				this.log.debug(`Unsupported or malformed control type "${control.type}" (${control.name}) ignored`);
+				continue;
+			}
+
+			if (mapping.scope === 'zone' && mapping.zoneId !== undefined) {
+				await this.updateZoneControl(
+					deviceId,
+					deviceKey,
+					mapping.zoneId,
+					mapping.zonePosition,
+					mapping.states,
+					seenWritableIds,
+				);
+			} else {
+				await this.updateDeviceControl(deviceId, deviceKey, mapping.states, seenWritableIds);
+			}
+		}
+		await this.disableDeviceWrites(deviceKey, seenWritableIds);
 	}
 
 	private async updateDevice(device: LiebherrDevice): Promise<string> {
@@ -216,21 +245,28 @@ class Liebherr extends utils.Adapter {
 		}
 	}
 
-	private async updateDeviceControl(deviceKey: string, states: MappedState[]): Promise<void> {
+	private async updateDeviceControl(
+		deviceId: string,
+		deviceKey: string,
+		states: MappedState[],
+		seenWritableIds: Set<string>,
+	): Promise<void> {
 		const channelId = `devices.${deviceKey}.controls`;
 		await this.extendObject(channelId, {
 			type: 'channel',
 			common: { name: 'Device controls' },
 			native: {},
 		});
-		await this.updateMappedStates(channelId, states);
+		await this.updateMappedStates(deviceId, channelId, states, seenWritableIds);
 	}
 
 	private async updateZoneControl(
+		deviceId: string,
 		deviceKey: string,
 		zoneId: number,
 		zonePosition: string | undefined,
 		states: MappedState[],
+		seenWritableIds: Set<string>,
 	): Promise<void> {
 		const channelId = `devices.${deviceKey}.zone_${toIdSegment(String(zoneId))}`;
 		await this.extendObject(channelId, {
@@ -242,17 +278,157 @@ class Liebherr extends utils.Adapter {
 		if (zonePosition !== undefined) {
 			await this.updateState(`${channelId}.position`, 'Zone position', 'text', 'string', zonePosition);
 		}
-		await this.updateMappedStates(channelId, states);
+		await this.updateMappedStates(deviceId, channelId, states, seenWritableIds);
 	}
 
-	private async updateMappedStates(channelId: string, states: MappedState[]): Promise<void> {
+	private async updateMappedStates(
+		deviceId: string,
+		channelId: string,
+		states: MappedState[],
+		seenWritableIds: Set<string>,
+	): Promise<void> {
 		for (const state of states) {
-			await this.extendObject(`${channelId}.${state.id}`, {
+			const relativeId = `${channelId}.${state.id}`;
+			await this.extendObject(relativeId, {
 				type: 'state',
 				common: state.common,
 				native: state.native ?? {},
 			});
-			await this.setState(`${channelId}.${state.id}`, { val: state.value, ack: true });
+			await this.setState(relativeId, { val: state.value, ack: true });
+			const writableId = this.registerWritableState(deviceId, relativeId, state);
+			if (writableId) {
+				seenWritableIds.add(writableId);
+			}
+		}
+	}
+
+	private registerWritableState(deviceId: string, relativeId: string, state: MappedState): string | undefined {
+		if (!state.common.write || !state.native) {
+			return undefined;
+		}
+
+		const native = state.native;
+		let control: WritableControl | undefined;
+		if (
+			native.controlType === 'TemperatureControl' &&
+			state.id === 'targetTemperature' &&
+			typeof native.zoneId === 'number' &&
+			typeof native.unit === 'string' &&
+			typeof native.min === 'number' &&
+			typeof native.max === 'number'
+		) {
+			const steps = Array.isArray(native.setTemperatureSteps)
+				? native.setTemperatureSteps.filter(
+						(step): step is number => typeof step === 'number' && Number.isFinite(step),
+					)
+				: undefined;
+			control = {
+				kind: 'temperature',
+				deviceId,
+				zoneId: native.zoneId,
+				unit: native.unit,
+				min: native.min,
+				max: native.max,
+				steps,
+				stepsEnabled: native.setTemperatureStepsEnabled === true,
+			};
+		} else if (
+			native.controlType === 'ToggleControl' &&
+			typeof native.controlName === 'string' &&
+			(typeof native.zoneId === 'number' || native.zoneId === undefined)
+		) {
+			control = {
+				kind: 'toggle',
+				deviceId,
+				controlName: native.controlName,
+				...(typeof native.zoneId === 'number' ? { zoneId: native.zoneId } : {}),
+			};
+		}
+
+		if (!control) {
+			this.log.warn(`Writable state ${relativeId} has incomplete HomeAPI metadata and will remain inactive`);
+			return undefined;
+		}
+
+		const fullId = `${this.namespace}.${relativeId}`;
+		this.writableControls.set(fullId, control);
+		if (!this.subscribedWritableStates.has(relativeId)) {
+			this.subscribeStates(relativeId);
+			this.subscribedWritableStates.add(relativeId);
+		}
+		return fullId;
+	}
+
+	private async disableDeviceWrites(deviceKey: string, keep = new Set<string>()): Promise<void> {
+		const prefix = `${this.namespace}.devices.${deviceKey}.`;
+		for (const [fullId] of this.writableControls) {
+			if (!fullId.startsWith(prefix) || keep.has(fullId)) {
+				continue;
+			}
+
+			this.writableControls.delete(fullId);
+			const relativeId = fullId.slice(this.namespace.length + 1);
+			this.unsubscribeStates(relativeId);
+			this.subscribedWritableStates.delete(relativeId);
+			await this.extendObject(relativeId, { common: { write: false } });
+		}
+	}
+
+	private async onStateChange(id: string, state: ioBroker.State | null | undefined): Promise<void> {
+		if (!state || state.ack || this.unloading) {
+			return;
+		}
+
+		const control = this.writableControls.get(id);
+		if (!control) {
+			return;
+		}
+		if (this.writesInProgress.has(id)) {
+			this.log.warn(`Ignoring overlapping write to ${id}`);
+			return;
+		}
+
+		const client = this.client;
+		if (!client) {
+			this.log.warn(`Cannot write ${id} because the HomeAPI client is not available`);
+			return;
+		}
+
+		this.writesInProgress.add(id);
+		try {
+			await processStateWrite(
+				state,
+				control,
+				operation => this.sendControlWrite(client, operation),
+				() => this.delay(CONTROL_READBACK_DELAY_MS),
+				async () => {
+					const deviceKey = this.knownDevices.get(control.deviceId);
+					if (!deviceKey) {
+						throw new LiebherrResponseError(
+							'The written device is not part of the current discovery result',
+						);
+					}
+					await this.syncDeviceControls(control.deviceId, deviceKey);
+				},
+			);
+			await this.setConnection(true);
+		} catch (error) {
+			if (error instanceof ControlValidationError) {
+				this.log.warn(`Rejected invalid write to ${id}: ${error.message}`);
+			} else {
+				await this.setConnection(false);
+				this.logApiError(error, `writing ${id}`);
+			}
+		} finally {
+			this.writesInProgress.delete(id);
+		}
+	}
+
+	private async sendControlWrite(client: HomeApiClient, operation: ControlWrite): Promise<void> {
+		if (operation.kind === 'temperature') {
+			await client.setTemperature(operation.deviceId, operation.request);
+		} else {
+			await client.setToggle(operation.deviceId, operation.controlName, operation.request);
 		}
 	}
 
@@ -333,6 +509,8 @@ class Liebherr extends utils.Adapter {
 		this.unloading = true;
 		this.clearTimeout(this.pollTimer);
 		this.pollTimer = undefined;
+		this.writableControls.clear();
+		this.subscribedWritableStates.clear();
 
 		void this.setConnection(false)
 			.catch(error =>

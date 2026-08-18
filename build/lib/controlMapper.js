@@ -23,6 +23,7 @@ __export(controlMapper_exports, {
   toIdSegment: () => toIdSegment
 });
 module.exports = __toCommonJS(controlMapper_exports);
+var import_writeController = require("./writeController");
 function isFiniteNumber(value) {
   return typeof value === "number" && Number.isFinite(value);
 }
@@ -65,6 +66,19 @@ function mapControl(control) {
     );
     targetTemperature.common.min = control.min;
     targetTemperature.common.max = control.max;
+    targetTemperature.common.role = "level.temperature";
+    targetTemperature.common.write = true;
+    targetTemperature.native = {
+      controlName: control.name,
+      controlType: control.type,
+      zoneId: control.zoneId,
+      ...control.zonePosition !== void 0 ? { zonePosition: control.zonePosition } : {},
+      unit: control.unit,
+      min: control.min,
+      max: control.max,
+      setTemperatureStepsEnabled: control.setTemperatureStepsEnabled === true,
+      ...Array.isArray(control.setTemperatureSteps) ? { setTemperatureSteps: control.setTemperatureSteps } : {}
+    };
     const states = [
       temperatureState("temperature", "Current temperature", control.value, control.unit),
       targetTemperature,
@@ -116,6 +130,7 @@ function mapControl(control) {
     };
   }
   if (isToggleControl(control)) {
+    const writable = (0, import_writeController.isWritableToggleControl)(control.name, control.zoneId);
     return {
       scope: "device",
       zoneId: isFiniteNumber(control.zoneId) ? control.zoneId : void 0,
@@ -126,9 +141,9 @@ function mapControl(control) {
           common: {
             name: control.name,
             type: "boolean",
-            role: "indicator",
+            role: writable ? "switch" : "indicator",
             read: true,
-            write: false
+            write: writable
           },
           value: control.value,
           native: {

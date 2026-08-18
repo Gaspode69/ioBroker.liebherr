@@ -107,6 +107,24 @@ export interface HomeApiClientOptions {
 	requestTimeoutMs?: number;
 }
 
+/** Body accepted by the HomeAPI temperature control endpoint. */
+export interface SetTemperatureRequest {
+	/** Appliance zone to update. */
+	zoneId: number;
+	/** Requested target temperature. */
+	target: number;
+	/** Temperature unit reported by the capability. */
+	unit: string;
+}
+
+/** Body accepted by the HomeAPI toggle control endpoints. */
+export interface SetToggleRequest {
+	/** Requested toggle value. */
+	value: boolean;
+	/** Zone required by zone-associated controls. */
+	zoneId?: number;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -200,7 +218,7 @@ export function parseControls(payload: unknown): LiebherrControl[] {
 	});
 }
 
-/** Minimal read-only client for the Liebherr SmartDevice HomeAPI. */
+/** Minimal client for the Liebherr SmartDevice HomeAPI. */
 export class HomeApiClient {
 	private readonly baseUrl: string;
 	private readonly fetch: FetchLike;
@@ -232,13 +250,56 @@ export class HomeApiClient {
 		return parseControls(await this.get(`/v1/devices/${encodeURIComponent(deviceId)}/controls`));
 	}
 
+	/**
+	 * Sets the target temperature of one appliance zone.
+	 *
+	 * @param deviceId Appliance identifier returned by getDevices.
+	 * @param request Validated temperature request.
+	 */
+	public async setTemperature(deviceId: string, request: SetTemperatureRequest): Promise<void> {
+		await this.post(`/v1/devices/${encodeURIComponent(deviceId)}/controls/temperature`, request);
+	}
+
+	/**
+	 * Sets one supported boolean appliance control.
+	 *
+	 * @param deviceId Appliance identifier returned by getDevices.
+	 * @param controlName Capability name returned by getControls.
+	 * @param request Validated toggle request.
+	 */
+	public async setToggle(deviceId: string, controlName: string, request: SetToggleRequest): Promise<void> {
+		await this.post(
+			`/v1/devices/${encodeURIComponent(deviceId)}/controls/${encodeURIComponent(controlName)}`,
+			request,
+		);
+	}
+
 	private async get(path: string): Promise<unknown> {
+		const response = await this.request(path, { method: 'GET' });
+
+		try {
+			return await response.json();
+		} catch {
+			throw new LiebherrResponseError('The HomeAPI returned invalid JSON');
+		}
+	}
+
+	private async post(path: string, body: SetTemperatureRequest | SetToggleRequest): Promise<void> {
+		await this.request(path, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(body),
+		});
+	}
+
+	private async request(path: string, init: RequestInit): Promise<Response> {
 		let response: Response;
 		try {
 			response = await this.fetch(`${this.baseUrl}${path}`, {
-				method: 'GET',
+				...init,
 				headers: {
 					Accept: 'application/json',
+					...init.headers,
 					'api-key': this.apiKey,
 				},
 				signal: AbortSignal.timeout(this.requestTimeoutMs),
@@ -255,10 +316,6 @@ export class HomeApiClient {
 			);
 		}
 
-		try {
-			return await response.json();
-		} catch {
-			throw new LiebherrResponseError('The HomeAPI returned invalid JSON');
-		}
+		return response;
 	}
 }

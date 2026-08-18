@@ -20,7 +20,7 @@ Liebherr and SmartDevice are trademarks of Liebherr. This project is not affilia
 
 ## Current status
 
-The current implementation is read-only. It discovers all appliances assigned to the configured API key and polls each appliance's reported controls. Write operations and Server-Sent Events are not implemented yet.
+The adapter discovers all appliances assigned to the configured API key and polls each appliance's reported controls. It supports validated writes for target temperatures, NightMode, PartyMode, SuperCool, and SuperFrost. Server-Sent Events are not implemented yet.
 
 Supported control schemas:
 
@@ -62,13 +62,13 @@ liebherr.0
             └── unit
 ```
 
-All capability states currently have `write: false`. Values received from Liebherr are stored with `ack: true`. A toggle state retains its HomeAPI `controlName`, `controlType`, and optional `zoneId` and `zonePosition` in the object's `native` metadata.
+Values received from Liebherr are stored with `ack: true`. User writes are sent only for states backed by a reported writable capability. A successful POST is followed by a two-second delay and a control readback; only the value returned by that GET is stored with `ack: true`. If POST or readback fails, the requested value is not acknowledged. Target temperatures are checked against the reported range and, when enabled, the reported allowed values. A control state retains the HomeAPI routing and validation information in its object's `native` metadata.
 
 ## Limitations
 
 - Requires internet access and an available Liebherr cloud service.
 - Only appliances returned by the HomeAPI are visible.
-- No writable controls yet.
+- Other reported or future controls remain read-only until their request schema is supported explicitly.
 - No SSE/realtime updates yet.
 
 ## Developer manual
@@ -169,6 +169,7 @@ Please refer to the [`dev-server` documentation](https://github.com/ioBroker/dev
 ### **WORK IN PROGRESS**
 * (Gaspode69) Added read-only SmartDevice HomeAPI device discovery and capability polling
 * (Gaspode69) Added encrypted API-key and polling-interval configuration
+* (Gaspode69) Added validated writes for target temperature, NightMode, PartyMode, SuperCool, and SuperFrost
 
 ## License
 MIT License

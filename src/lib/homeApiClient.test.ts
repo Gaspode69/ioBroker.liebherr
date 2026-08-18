@@ -58,6 +58,34 @@ describe('HomeApiClient', () => {
 		expect(requestUrl).to.match(/\/v1\/devices\/12\.345%2F6\/controls$/);
 	});
 
+	it('writes target temperatures with the documented request body', async () => {
+		const fetch = sinon.stub<Parameters<FetchLike>, ReturnType<FetchLike>>();
+		fetch.resolves(new Response(null, { status: 204 }));
+		const client = new HomeApiClient('test-key', { fetch });
+
+		await client.setTemperature('12/34', { zoneId: 1, target: -18, unit: '°C' });
+
+		const [url, init] = fetch.firstCall.args;
+		expect(requestUrl(url)).to.match(/\/v1\/devices\/12%2F34\/controls\/temperature$/);
+		expect(init?.method).to.equal('POST');
+		expect(new Headers(init?.headers).get('content-type')).to.equal('application/json');
+		expect(requestBody(init?.body)).to.deep.equal({ zoneId: 1, target: -18, unit: '°C' });
+	});
+
+	it('writes device-wide and zone-associated toggles', async () => {
+		const fetch = sinon.stub<Parameters<FetchLike>, ReturnType<FetchLike>>();
+		fetch.resolves(new Response(null, { status: 204 }));
+		const client = new HomeApiClient('test-key', { fetch });
+
+		await client.setToggle('device', 'nightmode', { value: true });
+		await client.setToggle('device', 'supercool', { zoneId: 0, value: false });
+
+		expect(requestUrl(fetch.firstCall.args[0])).to.match(/\/controls\/nightmode$/);
+		expect(requestBody(fetch.firstCall.args[1]?.body)).to.deep.equal({ value: true });
+		expect(requestUrl(fetch.secondCall.args[0])).to.match(/\/controls\/supercool$/);
+		expect(requestBody(fetch.secondCall.args[1]?.body)).to.deep.equal({ zoneId: 0, value: false });
+	});
+
 	for (const status of [401, 403, 404, 412, 422, 429, 500, 503]) {
 		it(`returns a typed error for HTTP ${status}`, async () => {
 			const fetch = sinon.stub<Parameters<FetchLike>, ReturnType<FetchLike>>();
@@ -120,3 +148,14 @@ describe('HomeApiClient', () => {
 		expect(caught).to.be.instanceOf(LiebherrResponseError);
 	});
 });
+
+function requestUrl(input: string | URL | Request): string {
+	return typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+}
+
+function requestBody(body: RequestInit['body']): unknown {
+	if (typeof body !== 'string') {
+		throw new TypeError('Expected a JSON string request body');
+	}
+	return JSON.parse(body) as unknown;
+}
