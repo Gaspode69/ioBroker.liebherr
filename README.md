@@ -25,6 +25,24 @@ Liebherr and SmartDevice are trademarks of Liebherr. This project is not affilia
 - A compatible Liebherr appliance exposed through the SmartDevice HomeAPI
 - A Liebherr SmartDevice HomeAPI API key
 - Internet access from the ioBroker host
+- Node.js 22 or newer
+- ioBroker js-controller 7.0.4 or newer
+- ioBroker Admin 7.6.20 or newer
+
+## Installation
+
+Once the adapter is available in the ioBroker `latest` repository, install it from the normal adapter list in ioBroker Admin.
+
+Until then, install the published test version in ioBroker Admin:
+
+1. Open **Adapters**.
+2. Select **Install adapter from custom URL**.
+3. Open the **NPM** tab.
+4. Enter `iobroker.liebherr@0.0.2` and start the installation.
+5. Create an adapter instance if ioBroker Admin does not create one automatically.
+6. Enter the HomeAPI API key in the instance configuration and save it.
+
+Do not publish API keys in forum posts, GitHub issues, screenshots, or log excerpts.
 
 ## Current status
 
@@ -100,12 +118,26 @@ For advanced users: HomeAPI values are published with `ack: true`. Writable stat
 - SSE/realtime updates are not implemented yet; data is updated by polling.
 - Reported controls without an implemented write schema remain read-only.
 
+## Testing and feedback
+
+This adapter is in an early public testing phase. When reporting a problem, please include:
+
+- Adapter, Node.js, js-controller, and Admin versions
+- The appliance model and device type
+- The control names and zone IDs reported by the appliance
+- Relevant debug log excerpts with API keys and other sensitive values removed
+
+Please report reproducible problems in the [GitHub issue tracker](https://github.com/Gaspode69/ioBroker.liebherr/issues).
+
 ## Changelog
 <!--
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+* (Gaspode69) Prepared the first public testing release for the ioBroker latest repository
+* (Gaspode69) Consolidated capability-based device discovery, polling, and validated control writes
+* (Gaspode69) Updated Node.js requirements, project metadata, CI workflows, and repository compliance
 
 ### 0.0.2-alpha.1 (2026-08-18)
 * (Gaspode69) Enabled automated npm publishing through GitHub trusted publishing
