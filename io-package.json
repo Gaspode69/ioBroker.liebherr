@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "liebherr",
-    "version": "0.0.2-alpha.0",
+    "version": "0.0.2-alpha.1",
     "news": {
+      "0.0.2-alpha.1": {
+        "en": "Enabled automated npm publishing through GitHub trusted publishing",
+        "de": "Automatisierte npm-Veröffentlichung über GitHub Trusted Publishing aktiviert.",
+        "ru": "Включена автоматическая публикация npm через GitHub Trusted Publishing.",
+        "pt": "A publicação automatizada do npm foi habilitada por meio da publicação confiável do GitHub.",
+        "nl": "Geautomatiseerd publiceren via npm is ingeschakeld via GitHub Trusted Publishing.",
+        "fr": "Activation de la publication automatisée npm via la publication de confiance GitHub",
+        "it": "Pubblicazione automatizzata di npm abilitata tramite GitHub Trusted Publishing.",
+        "es": "Se habilitó la publicación automatizada de npm a través de la publicación segura de GitHub.",
+        "pl": "Włączono automatyczne publikowanie npm za pośrednictwem zaufanego publikowania GitHub",
+        "uk": "Увімкнено автоматизовану публікацію npm через довірену публікацію GitHub",
+        "zh-cn": "已通过 GitHub 可信发布启用 npm 自动发布"
+      },
       "0.0.2-alpha.0": {
         "en": "Added read-only SmartDevice HomeAPI device discovery and capability polling\nAdded encrypted API-key and polling-interval configuration\nAdded validated writes for target temperature, NightMode, PartyMode, SuperCool, and SuperFrost",
         "de": "Hinzugefügt: Lesezugriff auf SmartDevice HomeAPI-Geräteerkennung und Funktionsabfrage\nVerschlüsselten API-Schlüssel und Abfrageintervallkonfiguration hinzugefügt\nValidierte Schreibvorgänge für Zieltemperatur, Nachtmodus, Partymodus, SuperCool und SuperFrost hinzugefügt.",
