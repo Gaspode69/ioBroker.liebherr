@@ -50,6 +50,8 @@ The API key is generated in the official Liebherr SmartDevice app.
 5. Copy and store the key securely.
 6. Enter the key in the ioBroker.liebherr adapter configuration.
 
+The API key is shown only once. Generating a new API key invalidates the previously generated key.
+
 For more information, see the official [Liebherr SmartDevice HomeAPI documentation](https://developer.liebherr.com/apis/smartdevice-homeapi).
 
 ## Configuration
