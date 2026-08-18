@@ -28,19 +28,6 @@
         "pl": "Dodano funkcję wykrywania urządzeń SmartDevice HomeAPI tylko do odczytu i sondowania ich możliwości\nDodano zaszyfrowany klucz API i konfigurację interwału sondowania\nDodano zweryfikowane zapisy dla temperatury docelowej, trybu nocnego, trybu imprezy, SuperCool i SuperFrost",
         "uk": "Додано можливість пошуку пристроїв SmartDevice HomeAPI та опитування можливостей лише для читання\nДодано зашифрований API-ключ та конфігурацію інтервалу опитування\nДодано перевірені записи для цільової температури, NightMode, PartyMode, SuperCool та SuperFrost",
         "zh-cn": "新增只读 SmartDevice HomeAPI 设备发现和功能轮询\n新增加密 API 密钥和轮询间隔配置\n新增了对目标温度、夜间模式、派对模式、超级酷冷模式和超级冰霜模式的验证写入"
-      },
-      "0.0.1": {
-        "en": "initial release",
-        "de": "Erstveröffentlichung",
-        "ru": "Начальная версия",
-        "pt": "lançamento inicial",
-        "nl": "Eerste uitgave",
-        "fr": "Première version",
-        "it": "Versione iniziale",
-        "es": "Versión inicial",
-        "pl": "Pierwsze wydanie",
-        "uk": "Початкова версія",
-        "zh-cn": "首次出版"
       }
     },
     "titleLang": {
@@ -105,7 +92,7 @@
     ],
     "globalDependencies": [
       {
-        "admin": ">=7.0.23"
+        "admin": ">=7.6.20"
       }
     ]
   },
