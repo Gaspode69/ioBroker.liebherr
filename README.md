@@ -105,6 +105,10 @@ For advanced users: HomeAPI values are published with `ack: true`. Writable stat
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+* (Gaspode69) Enabled automated npm publishing through GitHub trusted publishing
+
 ### 0.0.2-alpha.0 (2026-08-18)
 * (Gaspode69) Added read-only SmartDevice HomeAPI device discovery and capability polling
 * (Gaspode69) Added encrypted API-key and polling-interval configuration
