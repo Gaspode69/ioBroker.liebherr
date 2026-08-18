@@ -114,7 +114,9 @@ For advanced users: HomeAPI values are published with `ack: true`. Writable stat
 ## License
 MIT License
 
-Copyright (c) 2026 Gaspode69 <45949835+Gaspode69@users.noreply.github.com>
+Copyright (c) 2026 Gaspode69 <gaspode69@online.de>
+
+**No support is provided via email.**
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
