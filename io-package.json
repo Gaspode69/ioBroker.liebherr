@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "liebherr",
-    "version": "0.0.2-alpha.1",
+    "version": "0.0.2",
     "news": {
+      "0.0.2": {
+        "en": "Prepared the first public testing release for the ioBroker latest repository\nConsolidated capability-based device discovery, polling, and validated control writes\nUpdated Node.js requirements, project metadata, CI workflows, and repository compliance",
+        "de": "Die erste öffentliche Testversion für das neueste ioBroker-Repository wurde vorbereitet.\nKonsolidierte, fähigkeitsbasierte Geräteerkennung, Abfrage und validierte Steuerungsschreibvorgänge\nAktualisierte Node.js-Anforderungen, Projektmetadaten, CI-Workflows und Repository-Konformität",
+        "ru": "Подготовили первый публичный тестовый релиз для последней версии репозитория ioBroker.\nОбъединенное обнаружение устройств на основе их возможностей, опрос и проверенная запись управляющих данных.\nОбновлены требования к Node.js, метаданные проекта, рабочие процессы CI и соответствие репозитория требованиям.",
+        "pt": "Preparei a primeira versão de teste pública para o repositório mais recente do ioBroker.\nDescoberta consolidada de dispositivos baseada em capacidades, sondagem e gravações de controle validadas.\nRequisitos atualizados do Node.js, metadados do projeto, fluxos de trabalho de CI e conformidade do repositório.",
+        "nl": "De eerste openbare testversie voor de nieuwste ioBroker-repository is klaar.\nGeconsolideerde, op mogelijkheden gebaseerde apparaatdetectie, polling en gevalideerde besturingsschrijfbewerkingen\nBijgewerkte Node.js-vereisten, projectmetadata, CI-workflows en naleving van repository-richtlijnen.",
+        "fr": "Préparation de la première version de test publique pour le dernier dépôt d'ioBroker\nDécouverte, interrogation et écritures de contrôle validées des périphériques, basées sur leurs capacités\nMise à jour des exigences Node.js, des métadonnées du projet, des flux de travail d'intégration continue et de la conformité du dépôt",
+        "it": "Preparata la prima release di test pubblica per l'ultimo repository di ioBroker\nRilevamento, polling e scritture di controllo validate dei dispositivi basati sulle capacità consolidate.\nAggiornamento dei requisiti Node.js, dei metadati di progetto, dei flussi di lavoro CI e della conformità del repository.",
+        "es": "Se ha preparado la primera versión de prueba pública para el repositorio más reciente de ioBroker.\nDetección de dispositivos, sondeo y escrituras de control validadas consolidadas y basadas en capacidades.\nRequisitos de Node.js actualizados, metadatos del proyecto, flujos de trabajo de CI y cumplimiento del repositorio.",
+        "pl": "Przygotowaliśmy pierwszą publiczną wersję testową najnowszego repozytorium ioBroker\nSkonsolidowane wykrywanie urządzeń na podstawie ich możliwości, sondowanie i weryfikowane zapisy kontrolne\nZaktualizowane wymagania Node.js, metadane projektu, przepływy pracy CI i zgodność z repozytorium",
+        "uk": "Підготував перший публічний тестовий реліз для останнього репозиторію ioBroker\nКонсолідоване виявлення пристроїв на основі можливостей, опитування та перевірені контрольні записи\nОновлено вимоги Node.js, метадані проекту, робочі процеси CI та відповідність репозиторію вимогам.",
+        "zh-cn": "为 ioBroker 最新代码库准备了第一个公开测试版本。\n整合的基于能力的设备发现、轮询和验证控制写入\n更新了 Node.js 要求、项目元数据、CI 工作流和代码库合规性"
+      },
       "0.0.2-alpha.1": {
         "en": "Enabled automated npm publishing through GitHub trusted publishing",
         "de": "Automatisierte npm-Veröffentlichung über GitHub Trusted Publishing aktiviert.",

@@ -134,7 +134,7 @@ Please report reproducible problems in the [GitHub issue tracker](https://github
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.0.2 (2026-08-18)
 * (Gaspode69) Prepared the first public testing release for the ioBroker latest repository
 * (Gaspode69) Consolidated capability-based device discovery, polling, and validated control writes
 * (Gaspode69) Updated Node.js requirements, project metadata, CI workflows, and repository compliance
