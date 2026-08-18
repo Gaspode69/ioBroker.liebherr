@@ -1,120 +1,133 @@
 {
-	"common": {
-		"name": "liebherr",
-		"version": "0.0.1",
-		"news": {
-			"0.0.1": {
-				"en": "initial release",
-				"de": "Erstveröffentlichung",
-				"ru": "Начальная версия",
-				"pt": "lançamento inicial",
-				"nl": "Eerste uitgave",
-				"fr": "Première version",
-				"it": "Versione iniziale",
-				"es": "Versión inicial",
-				"pl": "Pierwsze wydanie",
-				"uk": "Початкова версія",
-				"zh-cn": "首次出版"
-			}
-		},
-		"titleLang": {
-			"en": "Liebherr SmartDevice",
-			"de": "Liebherr SmartDevice",
-			"ru": "Смарт-устройство Либхерр",
-			"pt": "Liebherr SmartDevice",
-			"nl": "Liebherr SmartDevice",
-			"fr": "Appareil intelligent Liebherr",
-			"it": "Liebherr SmartDevice",
-			"es": "Dispositivo inteligente Liebherr",
-			"pl": "Inteligentne urządzenie Liebherr",
-			"uk": "Liebherr SmartDevice",
-			"zh-cn": "利勃海尔智能设备"
-		},
-		"desc": {
-			"en": "Connects Liebherr refrigerators and freezers using the official SmartDevice HomeAPI",
-			"de": "Verbindet Liebherr-Kühl- und Gefrierschränke über die offizielle SmartDevice HomeAPI",
-			"ru": "Подключает холодильники и морозильники Liebherr с помощью официального SmartDevice HomeAPI.",
-			"pt": "Conecta refrigeradores e freezers Liebherr usando o SmartDevice HomeAPI oficial",
-			"nl": "Verbindt Liebherr koelkasten en vriezers met behulp van de officiële SmartDevice HomeAPI",
-			"fr": "Connecte les réfrigérateurs et congélateurs Liebherr à l'aide de l'API officielle SmartDevice HomeAPI",
-			"it": "Collega frigoriferi e congelatori Liebherr utilizzando la SmartDevice HomeAPI ufficiale",
-			"es": "Conecta refrigeradores y congeladores Liebherr mediante la SmartDevice HomeAPI oficial",
-			"pl": "Łączy lodówki i zamrażarki Liebherr za pomocą oficjalnego SmartDevice HomeAPI",
-			"uk": "Підключає холодильники та морозильні камери Liebherr за допомогою офіційного SmartDevice HomeAPI",
-			"zh-cn": "使用官方 SmartDevice HomeAPI 连接利勃海尔冰箱和冰柜"
-		},
-		"authors": [
-			"Gaspode69 <gaspode69@online.de>"
-		],
-		"keywords": [
-			"liebherr",
-			"smartdevice",
-			"refrigerator",
-			"freezer",
-			"homeapi"
-		],
-		"licenseInformation": {
-			"type": "free",
-			"license": "MIT"
-		},
-		"platform": "Javascript/Node.js",
-		"icon": "liebherr.png",
-		"enabled": true,
-		"extIcon": "https://raw.githubusercontent.com/Gaspode69/ioBroker.liebherr/main/admin/liebherr.png",
-		"readme": "https://github.com/Gaspode69/ioBroker.liebherr/blob/main/README.md",
-		"loglevel": "info",
-		"tier": 3,
-		"mode": "daemon",
-		"type": "household",
-		"compact": true,
-		"connectionType": "cloud",
-		"dataSource": "poll",
-		"adminUI": {
-			"config": "json"
-		},
-		"dependencies": [
-			{
-				"js-controller": ">=7.0.4"
-			}
-		],
-		"globalDependencies": [
-			{
-				"admin": ">=7.0.23"
-			}
-		]
-	},
-	"native": {
-		"apiKey": "",
-		"pollingInterval": 60
-	},
-	"encryptedNative": [
-		"apiKey"
-	],
-	"protectedNative": [
-		"apiKey"
-	],
-	"objects": [],
-	"instanceObjects": [
-		{
-			"_id": "info",
-			"type": "channel",
-			"common": {
-				"name": "Information"
-			},
-			"native": {}
-		},
-		{
-			"_id": "info.connection",
-			"type": "state",
-			"common": {
-				"role": "indicator.connected",
-				"name": "Device or service connected",
-				"type": "boolean",
-				"read": true,
-				"write": false,
-				"def": false
-			},
-			"native": {}
-		}
-	]
+  "common": {
+    "name": "liebherr",
+    "version": "0.0.2-alpha.0",
+    "news": {
+      "0.0.2-alpha.0": {
+        "en": "Added read-only SmartDevice HomeAPI device discovery and capability polling\nAdded encrypted API-key and polling-interval configuration\nAdded validated writes for target temperature, NightMode, PartyMode, SuperCool, and SuperFrost",
+        "de": "Hinzugefügt: Lesezugriff auf SmartDevice HomeAPI-Geräteerkennung und Funktionsabfrage\nVerschlüsselten API-Schlüssel und Abfrageintervallkonfiguration hinzugefügt\nValidierte Schreibvorgänge für Zieltemperatur, Nachtmodus, Partymodus, SuperCool und SuperFrost hinzugefügt.",
+        "ru": "Добавлена возможность обнаружения устройств SmartDevice HomeAPI в режиме только для чтения и опроса их возможностей.\nДобавлена конфигурация зашифрованного API-ключа и интервала опроса.\nДобавлены проверенные операции записи для целевой температуры, ночного режима, режима вечеринки, режима суперхолода и режима суперморозки.",
+        "pt": "Adicionada descoberta de dispositivos SmartDevice HomeAPI em modo somente leitura e consulta de capacidades.\nAdicionada configuração de chave de API criptografada e intervalo de sondagem\nAdicionadas gravações validadas para temperatura alvo, Modo Noturno, Modo Festa, SuperCool e SuperFrost.",
+        "nl": "Toegevoegde alleen-lezen SmartDevice HomeAPI-apparaatdetectie en -functionaliteitspeiling.\nVersleutelde API-sleutel en polling-intervalconfiguratie toegevoegd\nEr zijn gevalideerde schrijfbewerkingen toegevoegd voor de doeltemperatuur, NightMode, PartyMode, SuperCool en SuperFrost.",
+        "fr": "Ajout de la découverte des appareils SmartDevice HomeAPI en lecture seule et de l'interrogation des capacités\nAjout d'une clé API chiffrée et d'une configuration d'intervalle d'interrogation\nAjout de la validation des écritures pour la température cible, le mode Nuit, le mode Fête, le mode SuperFroid et le mode SuperGivré.",
+        "it": "Aggiunta la funzionalità di rilevamento e polling dei dispositivi SmartDevice HomeAPI in sola lettura.\nAggiunta la configurazione della chiave API crittografata e dell'intervallo di polling.\nAggiunte scritture validate per temperatura target, NightMode, PartyMode, SuperCool e SuperFrost",
+        "es": "Se agregó la detección de dispositivos y el sondeo de capacidades de SmartDevice HomeAPI de solo lectura.\nSe agregó la configuración de clave API cifrada e intervalo de sondeo.\nSe agregaron escrituras validadas para la temperatura objetivo, NightMode, PartyMode, SuperCool y SuperFrost.",
+        "pl": "Dodano funkcję wykrywania urządzeń SmartDevice HomeAPI tylko do odczytu i sondowania ich możliwości\nDodano zaszyfrowany klucz API i konfigurację interwału sondowania\nDodano zweryfikowane zapisy dla temperatury docelowej, trybu nocnego, trybu imprezy, SuperCool i SuperFrost",
+        "uk": "Додано можливість пошуку пристроїв SmartDevice HomeAPI та опитування можливостей лише для читання\nДодано зашифрований API-ключ та конфігурацію інтервалу опитування\nДодано перевірені записи для цільової температури, NightMode, PartyMode, SuperCool та SuperFrost",
+        "zh-cn": "新增只读 SmartDevice HomeAPI 设备发现和功能轮询\n新增加密 API 密钥和轮询间隔配置\n新增了对目标温度、夜间模式、派对模式、超级酷冷模式和超级冰霜模式的验证写入"
+      },
+      "0.0.1": {
+        "en": "initial release",
+        "de": "Erstveröffentlichung",
+        "ru": "Начальная версия",
+        "pt": "lançamento inicial",
+        "nl": "Eerste uitgave",
+        "fr": "Première version",
+        "it": "Versione iniziale",
+        "es": "Versión inicial",
+        "pl": "Pierwsze wydanie",
+        "uk": "Початкова версія",
+        "zh-cn": "首次出版"
+      }
+    },
+    "titleLang": {
+      "en": "Liebherr SmartDevice",
+      "de": "Liebherr SmartDevice",
+      "ru": "Смарт-устройство Либхерр",
+      "pt": "Liebherr SmartDevice",
+      "nl": "Liebherr SmartDevice",
+      "fr": "Appareil intelligent Liebherr",
+      "it": "Liebherr SmartDevice",
+      "es": "Dispositivo inteligente Liebherr",
+      "pl": "Inteligentne urządzenie Liebherr",
+      "uk": "Liebherr SmartDevice",
+      "zh-cn": "利勃海尔智能设备"
+    },
+    "desc": {
+      "en": "Connects Liebherr refrigerators and freezers using the official SmartDevice HomeAPI",
+      "de": "Verbindet Liebherr-Kühl- und Gefrierschränke über die offizielle SmartDevice HomeAPI",
+      "ru": "Подключает холодильники и морозильники Liebherr с помощью официального SmartDevice HomeAPI.",
+      "pt": "Conecta refrigeradores e freezers Liebherr usando o SmartDevice HomeAPI oficial",
+      "nl": "Verbindt Liebherr koelkasten en vriezers met behulp van de officiële SmartDevice HomeAPI",
+      "fr": "Connecte les réfrigérateurs et congélateurs Liebherr à l'aide de l'API officielle SmartDevice HomeAPI",
+      "it": "Collega frigoriferi e congelatori Liebherr utilizzando la SmartDevice HomeAPI ufficiale",
+      "es": "Conecta refrigeradores y congeladores Liebherr mediante la SmartDevice HomeAPI oficial",
+      "pl": "Łączy lodówki i zamrażarki Liebherr za pomocą oficjalnego SmartDevice HomeAPI",
+      "uk": "Підключає холодильники та морозильні камери Liebherr за допомогою офіційного SmartDevice HomeAPI",
+      "zh-cn": "使用官方 SmartDevice HomeAPI 连接利勃海尔冰箱和冰柜"
+    },
+    "authors": [
+      "Gaspode69 <gaspode69@online.de>"
+    ],
+    "keywords": [
+      "liebherr",
+      "smartdevice",
+      "refrigerator",
+      "freezer",
+      "homeapi"
+    ],
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
+    "platform": "Javascript/Node.js",
+    "icon": "liebherr.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/Gaspode69/ioBroker.liebherr/main/admin/liebherr.png",
+    "readme": "https://github.com/Gaspode69/ioBroker.liebherr/blob/main/README.md",
+    "loglevel": "info",
+    "tier": 3,
+    "mode": "daemon",
+    "type": "household",
+    "compact": true,
+    "connectionType": "cloud",
+    "dataSource": "poll",
+    "adminUI": {
+      "config": "json"
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=7.0.4"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=7.0.23"
+      }
+    ]
+  },
+  "native": {
+    "apiKey": "",
+    "pollingInterval": 60
+  },
+  "encryptedNative": [
+    "apiKey"
+  ],
+  "protectedNative": [
+    "apiKey"
+  ],
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "Device or service connected",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
 }
