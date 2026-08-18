@@ -25,7 +25,7 @@ The current implementation is read-only. It discovers all appliances assigned to
 Supported control schemas:
 
 - `TemperatureControl`, including current/target/minimum/maximum temperatures and reported temperature-step metadata
-- `ToggleControl`, both device-wide and zone-specific
+- `ToggleControl`; all operational toggles are grouped under the device's `controls` channel, with optional zone associations retained as object metadata
 
 Unknown future control schemas are ignored safely and logged at debug level.
 
@@ -52,17 +52,17 @@ liebherr.0
         │   ├── deviceType
         │   └── available
         ├── controls
-        │   └── <device-wide toggle>
+        │   └── <toggle control>
         └── zone_<zoneId>
             ├── position
             ├── temperature
             ├── targetTemperature
             ├── minTemperature
             ├── maxTemperature
-            └── <zone toggle>
+            └── unit
 ```
 
-All capability states currently have `write: false`. Values received from Liebherr are stored with `ack: true`.
+All capability states currently have `write: false`. Values received from Liebherr are stored with `ack: true`. A toggle state retains its HomeAPI `controlName`, `controlType`, and optional `zoneId` and `zonePosition` in the object's `native` metadata.
 
 ## Limitations
 

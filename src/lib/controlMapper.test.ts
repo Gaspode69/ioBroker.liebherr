@@ -42,7 +42,7 @@ describe('control mapping', () => {
 		expect(zone1?.states.find(state => state.id === 'targetTemperature')?.value).to.equal(-18);
 	});
 
-	it('maps device-wide and zone toggle capabilities without model assumptions', () => {
+	it('maps all toggles to device controls and preserves optional zone metadata', () => {
 		const nightMode = mapControl({ type: 'ToggleControl', name: 'nightmode', value: false });
 		const superCool = mapControl({
 			type: 'ToggleControl',
@@ -54,9 +54,19 @@ describe('control mapping', () => {
 
 		expect(nightMode?.scope).to.equal('device');
 		expect(nightMode?.states[0]).to.include({ id: 'nightmode', value: false });
-		expect(superCool?.scope).to.equal('zone');
+		expect(superCool?.scope).to.equal('device');
 		expect(superCool?.zoneId).to.equal(0);
 		expect(superCool?.states[0]).to.include({ id: 'supercool', value: true });
+		expect(superCool?.states[0].native).to.deep.equal({
+			controlName: 'supercool',
+			controlType: 'ToggleControl',
+			zoneId: 0,
+			zonePosition: 'top',
+		});
+		expect(nightMode?.states[0].native).to.deep.equal({
+			controlName: 'nightmode',
+			controlType: 'ToggleControl',
+		});
 		expect(superCool?.states[0].common.write).to.equal(false);
 	});
 

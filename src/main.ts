@@ -46,7 +46,7 @@ class Liebherr extends utils.Adapter {
 			return;
 		}
 
-		await this.extendObjectAsync('devices', {
+		await this.extendObject('devices', {
 			type: 'folder',
 			common: { name: 'Liebherr devices' },
 			native: {},
@@ -183,12 +183,12 @@ class Liebherr extends utils.Adapter {
 		this.knownDevices.set(device.deviceId, deviceKey);
 		const deviceRoot = `devices.${deviceKey}`;
 
-		await this.extendObjectAsync(deviceRoot, {
+		await this.extendObject(deviceRoot, {
 			type: 'device',
 			common: { name: device.nickname ?? device.deviceName ?? device.deviceId },
 			native: { deviceId: device.deviceId },
 		});
-		await this.extendObjectAsync(`${deviceRoot}.info`, {
+		await this.extendObject(`${deviceRoot}.info`, {
 			type: 'channel',
 			common: { name: 'Device information' },
 			native: {},
@@ -218,7 +218,7 @@ class Liebherr extends utils.Adapter {
 
 	private async updateDeviceControl(deviceKey: string, states: MappedState[]): Promise<void> {
 		const channelId = `devices.${deviceKey}.controls`;
-		await this.extendObjectAsync(channelId, {
+		await this.extendObject(channelId, {
 			type: 'channel',
 			common: { name: 'Device controls' },
 			native: {},
@@ -233,7 +233,7 @@ class Liebherr extends utils.Adapter {
 		states: MappedState[],
 	): Promise<void> {
 		const channelId = `devices.${deviceKey}.zone_${toIdSegment(String(zoneId))}`;
-		await this.extendObjectAsync(channelId, {
+		await this.extendObject(channelId, {
 			type: 'channel',
 			common: { name: zonePosition ? `Zone ${zoneId} (${zonePosition})` : `Zone ${zoneId}` },
 			native: { zoneId },
@@ -247,10 +247,10 @@ class Liebherr extends utils.Adapter {
 
 	private async updateMappedStates(channelId: string, states: MappedState[]): Promise<void> {
 		for (const state of states) {
-			await this.extendObjectAsync(`${channelId}.${state.id}`, {
+			await this.extendObject(`${channelId}.${state.id}`, {
 				type: 'state',
 				common: state.common,
-				native: {},
+				native: state.native ?? {},
 			});
 			await this.setState(`${channelId}.${state.id}`, { val: state.value, ack: true });
 		}
@@ -263,7 +263,7 @@ class Liebherr extends utils.Adapter {
 		type: ioBroker.CommonType,
 		value: ioBroker.StateValue,
 	): Promise<void> {
-		await this.extendObjectAsync(id, {
+		await this.extendObject(id, {
 			type: 'state',
 			common: {
 				name,

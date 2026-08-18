@@ -117,7 +117,7 @@ function mapControl(control) {
   }
   if (isToggleControl(control)) {
     return {
-      scope: isFiniteNumber(control.zoneId) ? "zone" : "device",
+      scope: "device",
       zoneId: isFiniteNumber(control.zoneId) ? control.zoneId : void 0,
       zonePosition: control.zonePosition,
       states: [
@@ -130,7 +130,13 @@ function mapControl(control) {
             read: true,
             write: false
           },
-          value: control.value
+          value: control.value,
+          native: {
+            controlName: control.name,
+            controlType: control.type,
+            ...isFiniteNumber(control.zoneId) ? { zoneId: control.zoneId } : {},
+            ...control.zonePosition !== void 0 ? { zonePosition: control.zonePosition } : {}
+          }
         }
       ]
     };

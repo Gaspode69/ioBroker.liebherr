@@ -53,7 +53,7 @@ class Liebherr extends utils.Adapter {
       this.log.warn("No Liebherr HomeAPI key is configured");
       return;
     }
-    await this.extendObjectAsync("devices", {
+    await this.extendObject("devices", {
       type: "folder",
       common: { name: "Liebherr devices" },
       native: {}
@@ -173,12 +173,12 @@ class Liebherr extends utils.Adapter {
     const deviceKey = (_a = this.knownDevices.get(device.deviceId)) != null ? _a : (0, import_controlMapper.toIdSegment)(device.deviceId);
     this.knownDevices.set(device.deviceId, deviceKey);
     const deviceRoot = `devices.${deviceKey}`;
-    await this.extendObjectAsync(deviceRoot, {
+    await this.extendObject(deviceRoot, {
       type: "device",
       common: { name: (_c = (_b = device.nickname) != null ? _b : device.deviceName) != null ? _c : device.deviceId },
       native: { deviceId: device.deviceId }
     });
-    await this.extendObjectAsync(`${deviceRoot}.info`, {
+    await this.extendObject(`${deviceRoot}.info`, {
       type: "channel",
       common: { name: "Device information" },
       native: {}
@@ -204,7 +204,7 @@ class Liebherr extends utils.Adapter {
   }
   async updateDeviceControl(deviceKey, states) {
     const channelId = `devices.${deviceKey}.controls`;
-    await this.extendObjectAsync(channelId, {
+    await this.extendObject(channelId, {
       type: "channel",
       common: { name: "Device controls" },
       native: {}
@@ -213,7 +213,7 @@ class Liebherr extends utils.Adapter {
   }
   async updateZoneControl(deviceKey, zoneId, zonePosition, states) {
     const channelId = `devices.${deviceKey}.zone_${(0, import_controlMapper.toIdSegment)(String(zoneId))}`;
-    await this.extendObjectAsync(channelId, {
+    await this.extendObject(channelId, {
       type: "channel",
       common: { name: zonePosition ? `Zone ${zoneId} (${zonePosition})` : `Zone ${zoneId}` },
       native: { zoneId }
@@ -225,17 +225,18 @@ class Liebherr extends utils.Adapter {
     await this.updateMappedStates(channelId, states);
   }
   async updateMappedStates(channelId, states) {
+    var _a;
     for (const state of states) {
-      await this.extendObjectAsync(`${channelId}.${state.id}`, {
+      await this.extendObject(`${channelId}.${state.id}`, {
         type: "state",
         common: state.common,
-        native: {}
+        native: (_a = state.native) != null ? _a : {}
       });
       await this.setState(`${channelId}.${state.id}`, { val: state.value, ack: true });
     }
   }
   async updateState(id, name, role, type, value) {
-    await this.extendObjectAsync(id, {
+    await this.extendObject(id, {
       type: "state",
       common: {
         name,

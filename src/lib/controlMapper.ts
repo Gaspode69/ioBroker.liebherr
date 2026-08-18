@@ -8,6 +8,8 @@ export interface MappedState {
 	common: ioBroker.StateCommon;
 	/** State value received from Liebherr. */
 	value: ioBroker.StateValue;
+	/** HomeAPI metadata required to identify the capability. */
+	native?: Record<string, unknown>;
 }
 
 /** Capability mapping target and states. */
@@ -144,7 +146,7 @@ export function mapControl(control: LiebherrControl): ControlMapping | undefined
 
 	if (isToggleControl(control)) {
 		return {
-			scope: isFiniteNumber(control.zoneId) ? 'zone' : 'device',
+			scope: 'device',
 			zoneId: isFiniteNumber(control.zoneId) ? control.zoneId : undefined,
 			zonePosition: control.zonePosition,
 			states: [
@@ -158,6 +160,12 @@ export function mapControl(control: LiebherrControl): ControlMapping | undefined
 						write: false,
 					},
 					value: control.value,
+					native: {
+						controlName: control.name,
+						controlType: control.type,
+						...(isFiniteNumber(control.zoneId) ? { zoneId: control.zoneId } : {}),
+						...(control.zonePosition !== undefined ? { zonePosition: control.zonePosition } : {}),
+					},
 				},
 			],
 		};
