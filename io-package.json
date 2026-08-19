@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "liebherr",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "news": {
+      "0.0.3": {
+        "en": "Added realtime control updates via HomeAPI Server-Sent Events with reconnect handling and periodic REST resync\nMasked appliance serial numbers in adapter log messages",
+        "de": "Echtzeit-Steuerungsaktualisierungen wurden über HomeAPI Server-Sent Events mit Wiederverbindungsbehandlung und periodischer REST-Resynchronisierung hinzugefügt.\nMaskierte Seriennummern von Geräten in Adapterprotokollmeldungen",
+        "ru": "Добавлены обновления управления в реальном времени через события HomeAPI Server-Sent Events с обработкой переподключения и периодической синхронизацией REST.\nЗамаскированные серийные номера устройств в сообщениях журнала адаптера",
+        "pt": "Adicionadas atualizações de controle em tempo real via Eventos Enviados pelo Servidor da HomeAPI, com tratamento de reconexão e ressincronização periódica via REST.\nNúmeros de série de aparelhos mascarados em mensagens de registro de adaptadores",
+        "nl": "Realtime updates van de bediening zijn toegevoegd via HomeAPI Server-Sent Events met afhandeling van herverbindingen en periodieke REST-resynchronisatie.\nGemaskeerde serienummers van apparaten in adapterlogberichten",
+        "fr": "Ajout de mises à jour de contrôle en temps réel via les événements envoyés par le serveur HomeAPI, avec gestion des reconnexions et resynchronisation REST périodique.\nNuméros de série d'appareils masqués dans les messages de journalisation de l'adaptateur",
+        "it": "Aggiunti aggiornamenti di controllo in tempo reale tramite HomeAPI Server-Sent Events con gestione della riconnessione e risincronizzazione REST periodica\nNumeri di serie degli elettrodomestici mascherati nei messaggi di registro dell'adattatore",
+        "es": "Se agregaron actualizaciones de control en tiempo real a través de eventos enviados por el servidor de HomeAPI con manejo de reconexión y resincronización REST periódica.\nNúmeros de serie de los electrodomésticos enmascarados en los mensajes de registro del adaptador",
+        "pl": "Dodano aktualizacje sterowania w czasie rzeczywistym za pośrednictwem zdarzeń wysyłanych przez serwer HomeAPI z obsługą ponownego połączenia i okresową ponowną synchronizacją REST\nNumery seryjne zamaskowanych urządzeń w komunikatach dziennika adaptera",
+        "uk": "Додано оновлення керування в режимі реального часу через події, надіслані сервером HomeAPI, з обробкою повторного підключення та періодичною повторною синхронізацією REST.\nЗамасковані серійні номери пристроїв у повідомленнях журналу адаптера",
+        "zh-cn": "通过 HomeAPI 服务器发送事件添加了实时控制更新，并具备重新连接处理和定期 REST 重新同步功能。\n适配器日志消息中已屏蔽设备序列号"
+      },
       "0.0.2": {
         "en": "Prepared the first public testing release for the ioBroker latest repository\nConsolidated capability-based device discovery, polling, and validated control writes\nUpdated Node.js requirements, project metadata, CI workflows, and repository compliance",
         "de": "Die erste öffentliche Testversion für das neueste ioBroker-Repository wurde vorbereitet.\nKonsolidierte, fähigkeitsbasierte Geräteerkennung, Abfrage und validierte Steuerungsschreibvorgänge\nAktualisierte Node.js-Anforderungen, Projektmetadaten, CI-Workflows und Repository-Konformität",

@@ -1,6 +1,6 @@
 {
   "name": "iobroker.liebherr",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Connects Liebherr refrigerators and freezers using the official SmartDevice HomeAPI",
   "author": {
     "name": "Gaspode69",
