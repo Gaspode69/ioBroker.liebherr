@@ -62,6 +62,16 @@ export type LiebherrControl = TemperatureControl | ToggleControl | BaseControl;
 
 export type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
+/** Callbacks invoked while consuming a HomeAPI control event stream. */
+export interface ControlStreamHandlers {
+	/** Called once the server has accepted the SSE request. */
+	onOpen?: () => void;
+	/** Called sequentially for every valid controls event. */
+	onControls: (controls: LiebherrControl[]) => Promise<void> | void;
+	/** Called for malformed individual events; the stream continues afterwards. */
+	onMalformedEvent?: (error: LiebherrResponseError) => void;
+}
+
 /** HTTP error returned by the Liebherr HomeAPI. */
 export class LiebherrApiError extends Error {
 	/**
@@ -251,6 +261,102 @@ export class HomeApiClient {
 	}
 
 	/**
+	 * Consumes realtime control updates until the server closes the stream or the signal is aborted.
+	 *
+	 * @param deviceId Appliance identifier returned by getDevices.
+	 * @param handlers Stream lifecycle and event callbacks.
+	 * @param signal Signal used by the adapter to stop the long-lived request.
+	 */
+	public async streamControls(deviceId: string, handlers: ControlStreamHandlers, signal: AbortSignal): Promise<void> {
+		let response: Response;
+		try {
+			response = await this.fetch(`${this.baseUrl}/v1/sse/devices/${encodeURIComponent(deviceId)}/controls`, {
+				method: 'GET',
+				headers: {
+					Accept: 'text/event-stream',
+					'Cache-Control': 'no-cache',
+					'api-key': this.apiKey,
+				},
+				signal,
+			});
+		} catch {
+			if (signal.aborted) {
+				return;
+			}
+			throw new LiebherrNetworkError();
+		}
+
+		if (!response.ok) {
+			throw this.createApiError(response);
+		}
+		if (!response.body) {
+			throw new LiebherrResponseError('The HomeAPI SSE response has no body');
+		}
+
+		handlers.onOpen?.();
+		const reader = response.body.getReader();
+		const decoder = new TextDecoder();
+		let buffer = '';
+		let dataLines: string[] = [];
+
+		const dispatch = async (): Promise<void> => {
+			if (dataLines.length === 0) {
+				return;
+			}
+			const data = dataLines.join('\n');
+			dataLines = [];
+			let controls: LiebherrControl[];
+			try {
+				controls = parseControls(JSON.parse(data) as unknown);
+			} catch (error) {
+				const responseError =
+					error instanceof LiebherrResponseError
+						? error
+						: new LiebherrResponseError('The HomeAPI SSE event contains invalid JSON');
+				handlers.onMalformedEvent?.(responseError);
+				return;
+			}
+			await handlers.onControls(controls);
+		};
+
+		try {
+			while (!signal.aborted) {
+				const { done, value } = await reader.read();
+				buffer += decoder.decode(value, { stream: !done });
+				let newline = buffer.indexOf('\n');
+				while (newline >= 0) {
+					let line = buffer.slice(0, newline);
+					buffer = buffer.slice(newline + 1);
+					if (line.endsWith('\r')) {
+						line = line.slice(0, -1);
+					}
+					if (line === '') {
+						await dispatch();
+					} else if (line.startsWith('data:')) {
+						const value = line.slice(5);
+						dataLines.push(value.startsWith(' ') ? value.slice(1) : value);
+					}
+					newline = buffer.indexOf('\n');
+				}
+				if (done) {
+					if (buffer.startsWith('data:')) {
+						const value = buffer.slice(5).replace(/\r$/, '');
+						dataLines.push(value.startsWith(' ') ? value.slice(1) : value);
+					}
+					await dispatch();
+					return;
+				}
+			}
+		} catch {
+			if (!signal.aborted) {
+				throw new LiebherrNetworkError();
+			}
+		} finally {
+			reader.releaseLock();
+		}
+	}
+
+	/**
 	 * Sets the target temperature of one appliance zone.
 	 *
 	 * @param deviceId Appliance identifier returned by getDevices.
@@ -309,13 +415,17 @@ export class HomeApiClient {
 		}
 
 		if (!response.ok) {
-			throw new LiebherrApiError(
-				`The Liebherr HomeAPI returned HTTP ${response.status}`,
-				response.status,
-				parseRetryAfter(response.headers.get('retry-after')),
-			);
+			throw this.createApiError(response);
 		}
 
 		return response;
+	}
+
+	private createApiError(response: Response): LiebherrApiError {
+		return new LiebherrApiError(
+			`The Liebherr HomeAPI returned HTTP ${response.status}`,
+			response.status,
+			parseRetryAfter(response.headers.get('retry-after')),
+		);
 	}
 }

@@ -2,6 +2,8 @@
 	"API key": "Ключ API",
 	"Liebherr SmartDevice HomeAPI key": "Ключ Liebherr SmartDevice HomeAPI",
 	"Polling interval": "Интервал опроса",
+	"Realtime updates": "Обновления в реальном времени",
+	"Use Server-Sent Events for realtime control updates; polling remains enabled as a safety resync": "Использовать Server-Sent Events для обновлений в реальном времени; опрос остается включенным для контрольной синхронизации",
 	"Time between HomeAPI updates in seconds": "Время между обновлениями HomeAPI в секундах",
 	"liebherr adapter settings": "Настройки адаптера для liebherr",
 	"seconds": "секунды"

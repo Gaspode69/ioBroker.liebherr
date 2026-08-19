@@ -58,6 +58,106 @@ describe('HomeApiClient', () => {
 		expect(requestUrl).to.match(/\/v1\/devices\/12\.345%2F6\/controls$/);
 	});
 
+	it('consumes chunked SSE control events and ignores keep-alives and other fields', async () => {
+		const fetch = sinon.stub<Parameters<FetchLike>, ReturnType<FetchLike>>();
+		const encoder = new TextEncoder();
+		const body = new ReadableStream<Uint8Array>({
+			start(controller) {
+				controller.enqueue(encoder.encode(': keep-alive\n\nevent: device-update\n'));
+				controller.enqueue(encoder.encode('data: [{"type":"ToggleControl",\n'));
+				controller.enqueue(encoder.encode('data: "name":"nightmode","value":true}]\n\n\n'));
+				controller.close();
+			},
+		});
+		fetch.resolves(new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream' } }));
+		const client = new HomeApiClient('test-key', { fetch });
+		const received: unknown[] = [];
+		let opened = false;
+
+		await client.streamControls(
+			'device/1',
+			{
+				onOpen: () => (opened = true),
+				onControls: controls => {
+					received.push(controls);
+				},
+			},
+			new AbortController().signal,
+		);
+
+		expect(opened).to.equal(true);
+		expect(received).to.deep.equal([[{ type: 'ToggleControl', name: 'nightmode', value: true }]]);
+		const [url, init] = fetch.firstCall.args;
+		expect(requestUrl(url)).to.match(/\/v1\/sse\/devices\/device%2F1\/controls$/);
+		expect(new Headers(init?.headers).get('accept')).to.equal('text/event-stream');
+		expect(new Headers(init?.headers).get('api-key')).to.equal('test-key');
+	});
+
+	it('skips malformed SSE events and continues with the next event', async () => {
+		const fetch = sinon.stub<Parameters<FetchLike>, ReturnType<FetchLike>>();
+		fetch.resolves(
+			new Response('data: {invalid}\n\n' + 'data: [{"type":"FutureControl","name":"future","value":42}]\n\n', {
+				status: 200,
+			}),
+		);
+		const client = new HomeApiClient('test-key', { fetch });
+		const received: unknown[] = [];
+		let malformed = 0;
+
+		await client.streamControls(
+			'device',
+			{
+				onControls: controls => {
+					received.push(controls);
+				},
+				onMalformedEvent: () => malformed++,
+			},
+			new AbortController().signal,
+		);
+
+		expect(malformed).to.equal(1);
+		expect(received).to.deep.equal([[{ type: 'FutureControl', name: 'future', value: 42 }]]);
+	});
+
+	it('returns typed SSE HTTP and network errors without exposing credentials', async () => {
+		const httpFetch = sinon.stub<Parameters<FetchLike>, ReturnType<FetchLike>>();
+		httpFetch.resolves(new Response('', { status: 429, headers: { 'retry-after': '3' } }));
+		const httpClient = new HomeApiClient('secret-key', { fetch: httpFetch });
+		let httpError: unknown;
+		try {
+			await httpClient.streamControls('device', { onControls: () => undefined }, new AbortController().signal);
+		} catch (error) {
+			httpError = error;
+		}
+		expect(httpError).to.be.instanceOf(LiebherrApiError);
+		expect((httpError as LiebherrApiError).retryAfterMs).to.equal(3_000);
+
+		const networkFetch = sinon.stub<Parameters<FetchLike>, ReturnType<FetchLike>>();
+		networkFetch.rejects(new Error('secret-key'));
+		const networkClient = new HomeApiClient('secret-key', { fetch: networkFetch });
+		let networkError: unknown;
+		try {
+			await networkClient.streamControls('device', { onControls: () => undefined }, new AbortController().signal);
+		} catch (error) {
+			networkError = error;
+		}
+		expect(networkError).to.be.instanceOf(LiebherrNetworkError);
+		expect((networkError as Error).message).not.to.contain('secret-key');
+	});
+
+	it('ends an SSE request quietly when it is aborted', async () => {
+		const controller = new AbortController();
+		const fetch: FetchLike = (_input, init) =>
+			new Promise((_resolve, reject) => {
+				init?.signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
+			});
+		const client = new HomeApiClient('test-key', { fetch });
+		const stream = client.streamControls('device', { onControls: () => undefined }, controller.signal);
+
+		controller.abort();
+		await stream;
+	});
+
 	it('writes target temperatures with the documented request body', async () => {
 		const fetch = sinon.stub<Parameters<FetchLike>, ReturnType<FetchLike>>();
 		fetch.resolves(new Response(null, { status: 204 }));

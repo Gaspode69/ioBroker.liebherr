@@ -6,6 +6,7 @@ declare global {
 		interface AdapterConfig {
 			apiKey: string;
 			pollingInterval: number;
+			enableSse: boolean;
 		}
 	}
 }

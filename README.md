@@ -49,13 +49,14 @@ Do not publish API keys in forum posts, GitHub issues, screenshots, or log excer
 The adapter currently provides:
 
 - Automatic discovery of all appliances associated with the configured API key
-- Capability-based creation and polling of controls, with a default interval of 60 seconds
+- Capability-based creation and polling of controls, with a default interval of 300 seconds
+- Realtime control updates through one reconnecting SSE stream per discovered appliance
 - Current, target, minimum, and maximum temperatures for every reported temperature zone
 - Reported temperature units and temperature-step metadata
 - Validated writes for target temperatures, NightMode, PartyMode, SuperCool, and SuperFrost when the corresponding capability is reported
 - Safe handling of malformed, unknown, and future control types without crashing the adapter
 
-`TemperatureControl` and `ToggleControl` are currently mapped. Operational toggle controls are grouped in the device's `controls` channel; any reported zone association is retained in the object's native metadata. Server-Sent Events (SSE) and realtime updates are not implemented yet.
+`TemperatureControl` and `ToggleControl` are currently mapped. Operational toggle controls are grouped in the device's `controls` channel; any reported zone association is retained in the object's native metadata. Realtime control updates use the official per-device Server-Sent Events (SSE) endpoint, while periodic REST polling remains active as a safety resync and for device discovery.
 
 ## Getting a HomeAPI API key
 
@@ -75,7 +76,8 @@ For more information, see the official [Liebherr SmartDevice HomeAPI documentati
 ## Configuration
 
 - **API key:** Your Liebherr SmartDevice HomeAPI API key. ioBroker stores it as an encrypted, protected native setting. The adapter never writes the key to its log.
-- **Polling interval:** Time in seconds between complete HomeAPI updates. The default is 60 seconds; valid values range from 30 to 86400 seconds.
+- **Realtime updates:** Enables the HomeAPI SSE streams (enabled by default). Disable this to use polling only.
+- **Polling interval:** Time between full REST discovery and control resyncs, in seconds. The default is 300 seconds; valid values range from 30 to 86400 seconds.
 
 ## Object structure
 
@@ -134,6 +136,11 @@ Please report reproducible problems in the [GitHub issue tracker](https://github
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+
+* (Gaspode69) Added realtime control updates via HomeAPI Server-Sent Events with reconnect handling and periodic REST resync
+* (Gaspode69) Masked appliance serial numbers in adapter log messages
+
 ### 0.0.2 (2026-08-18)
 * (Gaspode69) Prepared the first public testing release for the ioBroker latest repository
 * (Gaspode69) Consolidated capability-based device discovery, polling, and validated control writes

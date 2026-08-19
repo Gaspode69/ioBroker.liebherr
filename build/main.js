@@ -25,11 +25,13 @@ var utils = __toESM(require("@iobroker/adapter-core"));
 var import_controlMapper = require("./lib/controlMapper");
 var import_homeApiClient = require("./lib/homeApiClient");
 var import_retry = require("./lib/retry");
+var import_privacy = require("./lib/privacy");
 var import_writeController = require("./lib/writeController");
-const DEFAULT_POLLING_INTERVAL_SECONDS = 60;
+const DEFAULT_POLLING_INTERVAL_SECONDS = 300;
 const MIN_POLLING_INTERVAL_SECONDS = 30;
 const MAX_POLLING_INTERVAL_SECONDS = 86400;
 const CONTROL_READBACK_DELAY_MS = 2e3;
+const SSE_RECONNECT_DELAY_MS = 5e3;
 class Liebherr extends utils.Adapter {
   client;
   pollTimer;
@@ -39,6 +41,8 @@ class Liebherr extends utils.Adapter {
   writableControls = /* @__PURE__ */ new Map();
   subscribedWritableStates = /* @__PURE__ */ new Set();
   writesInProgress = /* @__PURE__ */ new Set();
+  sseSessions = /* @__PURE__ */ new Map();
+  enableSse = true;
   unloading = false;
   /** @param options Adapter startup options supplied by js-controller. */
   constructor(options = {}) {
@@ -54,6 +58,7 @@ class Liebherr extends utils.Adapter {
     var _a;
     await this.setConnection(false);
     this.pollingIntervalMs = this.getPollingIntervalMs(this.config.pollingInterval);
+    this.enableSse = this.config.enableSse !== false;
     const apiKey = (_a = this.config.apiKey) == null ? void 0 : _a.trim();
     if (!apiKey) {
       this.log.warn("No Liebherr HomeAPI key is configured");
@@ -136,6 +141,7 @@ class Liebherr extends utils.Adapter {
       devices.map((device) => device.deviceId)
     );
     for (const missingDeviceId of reconciliation.missing) {
+      this.stopSseSession(missingDeviceId);
       const deviceKey = this.knownDevices.get(missingDeviceId);
       if (deviceKey) {
         await this.disableDeviceWrites(deviceKey);
@@ -153,11 +159,12 @@ class Liebherr extends utils.Adapter {
       const deviceKey = await this.updateDevice(device);
       try {
         await this.syncDeviceControls(device.deviceId, deviceKey);
+        this.ensureSseSession(device.deviceId, deviceKey);
       } catch (error) {
         errors.push(error);
         await this.disableDeviceWrites(deviceKey);
         await this.setState(`devices.${deviceKey}.info.available`, { val: false, ack: true });
-        this.logApiError(error, `reading controls for device ${device.deviceId}`);
+        this.logApiError(error, `reading controls for device ${(0, import_privacy.maskDeviceId)(device.deviceId)}`);
       }
     }
     return errors;
@@ -168,6 +175,9 @@ class Liebherr extends utils.Adapter {
       throw new import_homeApiClient.LiebherrNetworkError();
     }
     const controls = await client.getControls(deviceId);
+    await this.applyControls(deviceId, deviceKey, controls, true);
+  }
+  async applyControls(deviceId, deviceKey, controls, disableMissingWrites) {
     const seenWritableIds = /* @__PURE__ */ new Set();
     for (const control of controls) {
       const mapping = (0, import_controlMapper.mapControl)(control);
@@ -188,7 +198,90 @@ class Liebherr extends utils.Adapter {
         await this.updateDeviceControl(deviceId, deviceKey, mapping.states, seenWritableIds);
       }
     }
-    await this.disableDeviceWrites(deviceKey, seenWritableIds);
+    if (disableMissingWrites) {
+      await this.disableDeviceWrites(deviceKey, seenWritableIds);
+    }
+  }
+  ensureSseSession(deviceId, deviceKey) {
+    if (!this.enableSse || this.unloading) {
+      return;
+    }
+    const existing = this.sseSessions.get(deviceId);
+    if (existing) {
+      existing.deviceKey = deviceKey;
+      return;
+    }
+    const session = { deviceId, deviceKey, consecutiveFailures: 0 };
+    this.sseSessions.set(deviceId, session);
+    this.connectSse(session);
+  }
+  connectSse(session) {
+    const client = this.client;
+    if (this.unloading || !client || this.sseSessions.get(session.deviceId) !== session) {
+      return;
+    }
+    const controller = new AbortController();
+    session.controller = controller;
+    void client.streamControls(
+      session.deviceId,
+      {
+        onOpen: () => {
+          this.log.debug(`Realtime stream connected for device ${(0, import_privacy.maskDeviceId)(session.deviceId)}`);
+        },
+        onControls: async (controls) => {
+          await this.applyControls(session.deviceId, session.deviceKey, controls, false);
+          await this.setState(`devices.${session.deviceKey}.info.available`, { val: true, ack: true });
+          await this.setConnection(true);
+          session.consecutiveFailures = 0;
+        },
+        onMalformedEvent: () => {
+          this.log.warn(
+            `Malformed realtime control event ignored for device ${(0, import_privacy.maskDeviceId)(session.deviceId)}`
+          );
+        }
+      },
+      controller.signal
+    ).then(() => {
+      if (!controller.signal.aborted) {
+        this.scheduleSseReconnect(session, new import_homeApiClient.LiebherrNetworkError());
+      }
+    }).catch((error) => {
+      if (!controller.signal.aborted) {
+        this.logApiError(error, `receiving realtime updates for device ${(0, import_privacy.maskDeviceId)(session.deviceId)}`);
+        this.scheduleSseReconnect(session, error);
+      }
+    });
+  }
+  scheduleSseReconnect(session, error) {
+    if (this.unloading || this.sseSessions.get(session.deviceId) !== session) {
+      return;
+    }
+    session.controller = void 0;
+    session.consecutiveFailures++;
+    const delay = this.calculateSseReconnectDelay(session.consecutiveFailures, error);
+    this.log.debug(
+      `Realtime stream for device ${(0, import_privacy.maskDeviceId)(session.deviceId)} reconnects in ${Math.ceil(delay / 1e3)} seconds`
+    );
+    session.reconnectTimer = this.setTimeout(() => {
+      session.reconnectTimer = void 0;
+      this.connectSse(session);
+    }, delay);
+  }
+  calculateSseReconnectDelay(consecutiveFailures, error) {
+    if (error instanceof import_homeApiClient.LiebherrApiError && (error.status === 404 || error.status === 412 || error.status === 422 || error.status === 429)) {
+      return (0, import_retry.calculateRetryDelay)(this.pollingIntervalMs, consecutiveFailures, error);
+    }
+    return (0, import_retry.calculateRetryDelay)(SSE_RECONNECT_DELAY_MS, consecutiveFailures, error);
+  }
+  stopSseSession(deviceId) {
+    var _a;
+    const session = this.sseSessions.get(deviceId);
+    if (!session) {
+      return;
+    }
+    this.sseSessions.delete(deviceId);
+    (_a = session.controller) == null ? void 0 : _a.abort();
+    this.clearTimeout(session.reconnectTimer);
   }
   async updateDevice(device) {
     var _a, _b, _c;
@@ -291,7 +384,9 @@ class Liebherr extends utils.Adapter {
       };
     }
     if (!control) {
-      this.log.warn(`Writable state ${relativeId} has incomplete HomeAPI metadata and will remain inactive`);
+      this.log.warn(
+        `Writable state ${(0, import_privacy.redactDeviceId)(relativeId, deviceId)} has incomplete HomeAPI metadata and will remain inactive`
+      );
       return void 0;
     }
     const fullId = `${this.namespace}.${relativeId}`;
@@ -324,12 +419,14 @@ class Liebherr extends utils.Adapter {
       return;
     }
     if (this.writesInProgress.has(id)) {
-      this.log.warn(`Ignoring overlapping write to ${id}`);
+      this.log.warn(`Ignoring overlapping write to ${(0, import_privacy.redactDeviceId)(id, control.deviceId)}`);
       return;
     }
     const client = this.client;
     if (!client) {
-      this.log.warn(`Cannot write ${id} because the HomeAPI client is not available`);
+      this.log.warn(
+        `Cannot write ${(0, import_privacy.redactDeviceId)(id, control.deviceId)} because the HomeAPI client is not available`
+      );
       return;
     }
     this.writesInProgress.add(id);
@@ -352,10 +449,10 @@ class Liebherr extends utils.Adapter {
       await this.setConnection(true);
     } catch (error) {
       if (error instanceof import_writeController.ControlValidationError) {
-        this.log.warn(`Rejected invalid write to ${id}: ${error.message}`);
+        this.log.warn(`Rejected invalid write to ${(0, import_privacy.redactDeviceId)(id, control.deviceId)}: ${error.message}`);
       } else {
         await this.setConnection(false);
-        this.logApiError(error, `writing ${id}`);
+        this.logApiError(error, `writing ${(0, import_privacy.redactDeviceId)(id, control.deviceId)}`);
       }
     } finally {
       this.writesInProgress.delete(id);
@@ -432,6 +529,9 @@ class Liebherr extends utils.Adapter {
     this.unloading = true;
     this.clearTimeout(this.pollTimer);
     this.pollTimer = void 0;
+    for (const deviceId of [...this.sseSessions.keys()]) {
+      this.stopSseSession(deviceId);
+    }
     this.writableControls.clear();
     this.subscribedWritableStates.clear();
     void this.setConnection(false).catch(

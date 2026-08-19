@@ -27,6 +27,18 @@
 			"lg": 4,
 			"xl": 4,
 			"unit": "seconds"
+		},
+		"enableSse": {
+			"type": "checkbox",
+			"label": "Realtime updates",
+			"help": "Use Server-Sent Events for realtime control updates; polling remains enabled as a safety resync",
+			"newLine": true,
+			"default": true,
+			"xs": 12,
+			"sm": 12,
+			"md": 12,
+			"lg": 8,
+			"xl": 6
 		}
 	}
 }

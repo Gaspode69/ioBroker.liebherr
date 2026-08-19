@@ -2,6 +2,8 @@
 	"API key": "API 密钥",
 	"Liebherr SmartDevice HomeAPI key": "Liebherr SmartDevice HomeAPI 密钥",
 	"Polling interval": "轮询间隔",
+	"Realtime updates": "实时更新",
+	"Use Server-Sent Events for realtime control updates; polling remains enabled as a safety resync": "使用 Server-Sent Events 进行实时控制更新；轮询仍作为安全重新同步保持启用",
 	"Time between HomeAPI updates in seconds": "HomeAPI 更新之间的秒数",
 	"liebherr adapter settings": "liebherr的适配器设置",
 	"seconds": "秒"

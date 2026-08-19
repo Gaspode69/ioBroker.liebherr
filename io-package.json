@@ -111,7 +111,8 @@
   },
   "native": {
     "apiKey": "",
-    "pollingInterval": 60
+    "pollingInterval": 300,
+    "enableSse": true
   },
   "encryptedNative": [
     "apiKey"

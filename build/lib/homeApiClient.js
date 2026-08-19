@@ -145,6 +145,96 @@ class HomeApiClient {
     return parseControls(await this.get(`/v1/devices/${encodeURIComponent(deviceId)}/controls`));
   }
   /**
+   * Consumes realtime control updates until the server closes the stream or the signal is aborted.
+   *
+   * @param deviceId Appliance identifier returned by getDevices.
+   * @param handlers Stream lifecycle and event callbacks.
+   * @param signal Signal used by the adapter to stop the long-lived request.
+   */
+  async streamControls(deviceId, handlers, signal) {
+    var _a;
+    let response;
+    try {
+      response = await this.fetch(`${this.baseUrl}/v1/sse/devices/${encodeURIComponent(deviceId)}/controls`, {
+        method: "GET",
+        headers: {
+          Accept: "text/event-stream",
+          "Cache-Control": "no-cache",
+          "api-key": this.apiKey
+        },
+        signal
+      });
+    } catch {
+      if (signal.aborted) {
+        return;
+      }
+      throw new LiebherrNetworkError();
+    }
+    if (!response.ok) {
+      throw this.createApiError(response);
+    }
+    if (!response.body) {
+      throw new LiebherrResponseError("The HomeAPI SSE response has no body");
+    }
+    (_a = handlers.onOpen) == null ? void 0 : _a.call(handlers);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let dataLines = [];
+    const dispatch = async () => {
+      var _a2;
+      if (dataLines.length === 0) {
+        return;
+      }
+      const data = dataLines.join("\n");
+      dataLines = [];
+      let controls;
+      try {
+        controls = parseControls(JSON.parse(data));
+      } catch (error) {
+        const responseError = error instanceof LiebherrResponseError ? error : new LiebherrResponseError("The HomeAPI SSE event contains invalid JSON");
+        (_a2 = handlers.onMalformedEvent) == null ? void 0 : _a2.call(handlers, responseError);
+        return;
+      }
+      await handlers.onControls(controls);
+    };
+    try {
+      while (!signal.aborted) {
+        const { done, value } = await reader.read();
+        buffer += decoder.decode(value, { stream: !done });
+        let newline = buffer.indexOf("\n");
+        while (newline >= 0) {
+          let line = buffer.slice(0, newline);
+          buffer = buffer.slice(newline + 1);
+          if (line.endsWith("\r")) {
+            line = line.slice(0, -1);
+          }
+          if (line === "") {
+            await dispatch();
+          } else if (line.startsWith("data:")) {
+            const value2 = line.slice(5);
+            dataLines.push(value2.startsWith(" ") ? value2.slice(1) : value2);
+          }
+          newline = buffer.indexOf("\n");
+        }
+        if (done) {
+          if (buffer.startsWith("data:")) {
+            const value2 = buffer.slice(5).replace(/\r$/, "");
+            dataLines.push(value2.startsWith(" ") ? value2.slice(1) : value2);
+          }
+          await dispatch();
+          return;
+        }
+      }
+    } catch {
+      if (!signal.aborted) {
+        throw new LiebherrNetworkError();
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  }
+  /**
    * Sets the target temperature of one appliance zone.
    *
    * @param deviceId Appliance identifier returned by getDevices.
@@ -197,13 +287,16 @@ class HomeApiClient {
       throw new LiebherrNetworkError();
     }
     if (!response.ok) {
-      throw new LiebherrApiError(
-        `The Liebherr HomeAPI returned HTTP ${response.status}`,
-        response.status,
-        parseRetryAfter(response.headers.get("retry-after"))
-      );
+      throw this.createApiError(response);
     }
     return response;
+  }
+  createApiError(response) {
+    return new LiebherrApiError(
+      `The Liebherr HomeAPI returned HTTP ${response.status}`,
+      response.status,
+      parseRetryAfter(response.headers.get("retry-after"))
+    );
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

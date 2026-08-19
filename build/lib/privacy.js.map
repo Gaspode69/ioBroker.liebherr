@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/privacy.ts"],
+  "sourcesContent": ["import { toIdSegment } from './controlMapper';\n\n/**\n * Produces a privacy-safe appliance identifier for diagnostic messages.\n *\n * @param deviceId HomeAPI appliance identifier (serial number).\n * @returns Masked identifier retaining at most four trailing alphanumeric characters.\n */\nexport function maskDeviceId(deviceId: string): string {\n\tconst suffix = deviceId.replace(/[^A-Za-z0-9]/g, '').slice(-4);\n\treturn suffix ? `****${suffix}` : '****';\n}\n\n/**\n * Removes a raw or ioBroker-ID-encoded appliance identifier from diagnostic text.\n *\n * @param text Diagnostic text which may contain an appliance identifier.\n * @param deviceId HomeAPI appliance identifier to redact.\n * @returns Text containing only the masked identifier.\n */\nexport function redactDeviceId(text: string, deviceId: string): string {\n\tconst masked = maskDeviceId(deviceId);\n\treturn text.split(deviceId).join(masked).split(toIdSegment(deviceId)).join(masked);\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,2BAA4B;AAQrB,SAAS,aAAa,UAA0B;AACtD,QAAM,SAAS,SAAS,QAAQ,iBAAiB,EAAE,EAAE,MAAM,EAAE;AAC7D,SAAO,SAAS,OAAO,MAAM,KAAK;AACnC;AASO,SAAS,eAAe,MAAc,UAA0B;AACtE,QAAM,SAAS,aAAa,QAAQ;AACpC,SAAO,KAAK,MAAM,QAAQ,EAAE,KAAK,MAAM,EAAE,UAAM,kCAAY,QAAQ,CAAC,EAAE,KAAK,MAAM;AAClF;",
+  "names": []
+}
