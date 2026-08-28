@@ -136,6 +136,10 @@ Please report reproducible problems in the [GitHub issue tracker](https://github
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+
+* (Gaspode69) Updated the Node.js 22 TypeScript configuration dependency; TypeScript 7 remains deferred until the development toolchain supports its compiler API
+
 ### 0.0.3 (2026-08-19)
 
 * (Gaspode69) Added realtime control updates via HomeAPI Server-Sent Events with reconnect handling and periodic REST resync
