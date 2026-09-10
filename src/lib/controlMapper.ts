@@ -160,6 +160,7 @@ export function mapControl(control: LiebherrControl): ControlMapping | undefined
 
 	if (isToggleControl(control)) {
 		const writable = isWritableToggleControl(control.name, control.zoneId);
+		const role = writable && control.name.toLowerCase() === 'partymode' ? 'switch.mode.party' : 'switch';
 		return {
 			scope: 'device',
 			zoneId: isFiniteNumber(control.zoneId) ? control.zoneId : undefined,
@@ -170,7 +171,7 @@ export function mapControl(control: LiebherrControl): ControlMapping | undefined
 					common: {
 						name: control.name,
 						type: 'boolean',
-						role: writable ? 'switch' : 'indicator',
+						role: writable ? role : 'indicator',
 						read: true,
 						write: writable,
 					},

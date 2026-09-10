@@ -56,6 +56,7 @@ describe('control mapping', () => {
 
 	it('maps all toggles to device controls and preserves optional zone metadata', () => {
 		const nightMode = mapControl({ type: 'ToggleControl', name: 'nightmode', value: false });
+		const partyMode = mapControl({ type: 'ToggleControl', name: 'partymode', value: false });
 		const superCool = mapControl({
 			type: 'ToggleControl',
 			name: 'supercool',
@@ -81,6 +82,8 @@ describe('control mapping', () => {
 		});
 		expect(superCool?.states[0].common.write).to.equal(true);
 		expect(nightMode?.states[0].common.write).to.equal(true);
+		expect(nightMode?.states[0].common.role).to.equal('switch');
+		expect(partyMode?.states[0].common.role).to.equal('switch.mode.party');
 	});
 
 	it('keeps toggles without a documented write schema read-only', () => {

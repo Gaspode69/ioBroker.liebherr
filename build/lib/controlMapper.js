@@ -131,6 +131,7 @@ function mapControl(control) {
   }
   if (isToggleControl(control)) {
     const writable = (0, import_writeController.isWritableToggleControl)(control.name, control.zoneId);
+    const role = writable && control.name.toLowerCase() === "partymode" ? "switch.mode.party" : "switch";
     return {
       scope: "device",
       zoneId: isFiniteNumber(control.zoneId) ? control.zoneId : void 0,
@@ -141,7 +142,7 @@ function mapControl(control) {
           common: {
             name: control.name,
             type: "boolean",
-            role: writable ? "switch" : "indicator",
+            role: writable ? role : "indicator",
             read: true,
             write: writable
           },

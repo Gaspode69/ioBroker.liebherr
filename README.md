@@ -31,16 +31,7 @@ Liebherr and SmartDevice are trademarks of Liebherr. This project is not affilia
 
 ## Installation
 
-Once the adapter is available in the ioBroker `latest` repository, install it from the normal adapter list in ioBroker Admin.
-
-Until then, install the published test version in ioBroker Admin:
-
-1. Open **Adapters**.
-2. Select **Install adapter from custom URL**.
-3. Open the **NPM** tab.
-4. Enter `iobroker.liebherr@0.0.2` and start the installation.
-5. Create an adapter instance if ioBroker Admin does not create one automatically.
-6. Enter the HomeAPI API key in the instance configuration and save it.
+Install the adapter from the normal adapter list in ioBroker Admin. Create an adapter instance if ioBroker Admin does not create one automatically, enter the HomeAPI API key in the instance configuration, and save it.
 
 Do not publish API keys in forum posts, GitHub issues, screenshots, or log excerpts.
 
@@ -117,7 +108,7 @@ For advanced users: HomeAPI values are published with `ack: true`. Writable stat
 - Only appliances exposed through the SmartDevice HomeAPI are supported.
 - The Liebherr SmartModule LocalAPI is not supported.
 - The HomeAPI is currently beta and may change.
-- SSE/realtime updates are not implemented yet; data is updated by polling.
+- Realtime updates require SSE to be enabled; periodic polling remains active for discovery and resynchronization.
 - Reported controls without an implemented write schema remain read-only.
 
 ## Testing and feedback

@@ -148,7 +148,7 @@ class Liebherr extends utils.Adapter {
         await this.updateState(
           `devices.${deviceKey}.info.available`,
           "Device available",
-          "indicator.connected",
+          "indicator.reachable",
           "boolean",
           false
         );
@@ -302,19 +302,19 @@ class Liebherr extends utils.Adapter {
     await this.updateOptionalTextState(`${deviceRoot}.info.nickname`, "Nickname", device.nickname);
     await this.updateOptionalTextState(`${deviceRoot}.info.deviceName`, "Device name", device.deviceName);
     await this.updateOptionalTextState(`${deviceRoot}.info.deviceType`, "Device type", device.deviceType);
-    await this.updateOptionalTextState(`${deviceRoot}.info.imageUrl`, "Image URL", device.imageUrl);
+    await this.updateOptionalTextState(`${deviceRoot}.info.imageUrl`, "Image URL", device.imageUrl, "text.url");
     await this.updateState(
       `${deviceRoot}.info.available`,
       "Device available",
-      "indicator.connected",
+      "indicator.reachable",
       "boolean",
       true
     );
     return deviceKey;
   }
-  async updateOptionalTextState(id, name, value) {
+  async updateOptionalTextState(id, name, value, role = "text") {
     if (value !== void 0) {
-      await this.updateState(id, name, "text", "string", value);
+      await this.updateState(id, name, role, "string", value);
     }
   }
   async updateDeviceControl(deviceId, deviceKey, states, seenWritableIds) {
