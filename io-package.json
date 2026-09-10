@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "liebherr",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "news": {
+      "0.0.4": {
+        "en": "Updated the Node.js 22 TypeScript configuration dependency; TypeScript 7 remains deferred until the development toolchain supports its compiler API",
+        "de": "Die TypeScript-Konfigurationsabhängigkeit Node.js 22 wurde aktualisiert; TypeScript 7 wird verschoben, bis die Toolchain die Compiler-API unterstützt",
+        "ru": "Обновлена зависимость конфигурации TypeScript Node.js 22; TypeScript 7 остается отложенным до тех пор, пока набор инструментов разработки не поддержит API компилятора",
+        "pt": "Atualizou a dependência de configuração do TypeScript do Node.js 2.2; o TypeScript 7 permanece adiado até que a API do compilador",
+        "nl": "De configuratieafhankelijkheid van Node.js 22 is bijgewerkt; TypeScript 7 blijft uitgesteld totdat de ontwikkeltoolchain de compiler-API ondersteunt",
+        "fr": "Mise à jour de la dépendance de configuration Node.js 2.2 avec TypeScript ; TypeScript 7 est reporté jusqu'à ce que la chaîne d'outils de développement gère son API",
+        "it": "Aggiornata la dipendenza di configurazione TypeScript di Node.js 22; TypeScript 7 rimane differita fino a quando la toolchain non supporta l'API",
+        "es": "Se actualizó la dependencia de configuración de TypeScript Node.js 22; TypeScript 7 sigue aplazado hasta que la cadena de herramientas de desarrollo admita su API de compilador",
+        "pl": "Zaktualizowano zależność konfiguracji Node.js 22 TypeScript; TypeScript 7 pozostaje odroczony, dopóki łańcuch narzędzi programistycznych nie obsługuje interfejsu API kompilatora",
+        "uk": "Оновлено залежність конфігурації Node.js 22 TypeScript; TypeScript 7 залишається відкладеним, поки ланцюжок інструментів розробки не підтримує API компілятора",
+        "zh-cn": "更新了 Node.js 22 TypeScript 配置依赖关系；在开发工具链支持其编译器 API 之前，TypeScript 7 仍处于推迟状态"
+      },
       "0.0.3": {
         "en": "Added realtime control updates via HomeAPI Server-Sent Events with reconnect handling and periodic REST resync\nMasked appliance serial numbers in adapter log messages",
         "de": "Echtzeit-Steuerungsaktualisierungen wurden über HomeAPI Server-Sent Events mit Wiederverbindungsbehandlung und periodischer REST-Resynchronisierung hinzugefügt.\nMaskierte Seriennummern von Geräten in Adapterprotokollmeldungen",
