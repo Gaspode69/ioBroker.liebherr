@@ -4,6 +4,9 @@
 !.github/
 .dev-server/
 
+# Local object dumps may contain device identifiers and state values
+/liebherr*.json
+
 *.code-workspace
 node_modules
 nbproject
