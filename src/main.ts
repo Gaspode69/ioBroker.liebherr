@@ -256,12 +256,15 @@ class Liebherr extends utils.Adapter {
 		}
 
 		const controller = new AbortController();
+		let streamOpened = false;
 		session.controller = controller;
 		void client
 			.streamControls(
 				session.deviceId,
 				{
 					onOpen: () => {
+						streamOpened = true;
+						session.consecutiveFailures = 0;
 						this.log.debug(`Realtime stream connected for device ${maskDeviceId(session.deviceId)}`);
 					},
 					onControls: async controls => {
@@ -285,7 +288,16 @@ class Liebherr extends utils.Adapter {
 			})
 			.catch(error => {
 				if (!controller.signal.aborted) {
-					this.logApiError(error, `receiving realtime updates for device ${maskDeviceId(session.deviceId)}`);
+					if (streamOpened && error instanceof LiebherrNetworkError) {
+						this.log.debug(
+							`Realtime stream interrupted for device ${maskDeviceId(session.deviceId)}; reconnecting`,
+						);
+					} else {
+						this.logApiError(
+							error,
+							`receiving realtime updates for device ${maskDeviceId(session.deviceId)}`,
+						);
+					}
 					this.scheduleSseReconnect(session, error);
 				}
 			});
