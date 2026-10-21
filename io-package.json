@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "liebherr",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "news": {
+      "0.0.5": {
+        "en": "Reduced log noise from transient interruptions of established realtime streams",
+        "de": "Geringeres Log-Rauschen bei kurzzeitigen Unterbrechungen etablierter Echtzeitstreams",
+        "ru": "Снижение логарифмического шума, вызванного временными прерываниями установленных потоков в реальном времени",
+        "pt": "Redução do ruído de interrupções transitórias de streams em tempo real",
+        "nl": "Minder logruis als gevolg van tijdelijke onderbrekingen van bestaande realtime streams",
+        "fr": "Réduction du bruit de journal dû à l'interruption des flux en temps réel établis",
+        "it": "Rumore di log ridotto dovuto a interruzioni temporanee di stream in tempo reale",
+        "es": "Redujo el ruido de las interrupciones transitorias de las transmisiones en tiempo real",
+        "pl": "Zmniejszony szum dziennika spowodowany przejściowymi przerwami ustalonych strumieni w czasie rzeczywistym",
+        "uk": "Зменшення шуму журналу від перехідних переривань встановлених потоків реального часу",
+        "zh-cn": "减少了已建立的实时流暂时中断造成的日志噪音"
+      },
       "0.0.4": {
         "en": "Updated the Node.js 22 TypeScript configuration dependency; TypeScript 7 remains deferred until the development toolchain supports its compiler API",
         "de": "Die TypeScript-Konfigurationsabhängigkeit Node.js 22 wurde aktualisiert; TypeScript 7 wird verschoben, bis die Toolchain die Compiler-API unterstützt",
