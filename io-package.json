@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "liebherr",
-    "version": "0.0.5",
+    "version": "0.1.0",
     "news": {
+      "0.1.0": {
+        "en": "Added writable IceMaker control with capability-based Max Ice support",
+        "de": "Schreibbare IceMaker-Steuerung mit Max-Ice-Unterstützung hinzugefügt",
+        "ru": "Добавлен доступный для записи элемент управления IceMaker с поддержкой Max Ice на основе возможностей",
+        "pt": "Adicionado controle gravável do IceMaker com suporte Max Ice",
+        "nl": "Beschrijfbare IceMaker-bediening toegevoegd met Max Ice-ondersteuning op basis van mogelijkheden",
+        "fr": "Ajout d'un contrôle IceMaker inscriptible avec le support de Max Ice",
+        "it": "Aggiunto controllo IceMaker scrivibile con supporto Max Ice",
+        "es": "Se añadió un control IceMaker grabable con soporte Max Ice basado en capacidades",
+        "pl": "Dodano zapisywalną kontrolę IceMaker z obsługą Max Ice opartej na możliwościach",
+        "uk": "Додано керування для запису IceMaker з підтримкою Max Ice на основі можливостей",
+        "zh-cn": "增加了可写的 IceMaker 控件，支持基于能力的 Max Ice"
+      },
       "0.0.5": {
         "en": "Reduced log noise from transient interruptions of established realtime streams",
         "de": "Geringeres Log-Rauschen bei kurzzeitigen Unterbrechungen etablierter Echtzeitstreams",

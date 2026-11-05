@@ -128,7 +128,7 @@ Please report reproducible problems in the [GitHub issue tracker](https://github
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.1.0 (2026-11-05)
 
 * (Gaspode69) Added writable IceMaker control with capability-based Max Ice support
 
