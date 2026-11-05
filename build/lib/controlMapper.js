@@ -33,6 +33,12 @@ function isTemperatureControl(control) {
 function isToggleControl(control) {
   return control.type === "ToggleControl" && typeof control.value === "boolean";
 }
+function isIceMakerMode(value) {
+  return value === "OFF" || value === "ON" || value === "MAX_ICE";
+}
+function isIceMakerControl(control) {
+  return control.type === "IceMakerControl" && isFiniteNumber(control.zoneId) && isIceMakerMode(control.iceMakerMode) && typeof control.hasMaxIce === "boolean" && (control.hasMaxIce || control.iceMakerMode !== "MAX_ICE");
+}
 function toIdSegment(value) {
   return Array.from(value, (character) => {
     var _a;
@@ -152,6 +158,39 @@ function mapControl(control) {
             controlType: control.type,
             ...isFiniteNumber(control.zoneId) ? { zoneId: control.zoneId } : {},
             ...control.zonePosition !== void 0 ? { zonePosition: control.zonePosition } : {}
+          }
+        }
+      ]
+    };
+  }
+  if (isIceMakerControl(control)) {
+    const states = {
+      OFF: "Off",
+      ON: "On",
+      ...control.hasMaxIce ? { MAX_ICE: "Max Ice" } : {}
+    };
+    return {
+      scope: "device",
+      zoneId: control.zoneId,
+      zonePosition: control.zonePosition,
+      states: [
+        {
+          id: toIdSegment(control.name),
+          common: {
+            name: "IceMaker mode",
+            type: "string",
+            role: "level.mode",
+            read: true,
+            write: true,
+            states
+          },
+          value: control.iceMakerMode,
+          native: {
+            controlName: control.name,
+            controlType: control.type,
+            zoneId: control.zoneId,
+            ...control.zonePosition !== void 0 ? { zonePosition: control.zonePosition } : {},
+            hasMaxIce: control.hasMaxIce
           }
         }
       ]

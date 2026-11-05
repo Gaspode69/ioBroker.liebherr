@@ -1,4 +1,4 @@
-import type { SetTemperatureRequest, SetToggleRequest } from './homeApiClient';
+import type { IceMakerMode, SetIceMakerRequest, SetTemperatureRequest, SetToggleRequest } from './homeApiClient';
 
 /** Toggle controls whose POST schema is defined for the first writable release. */
 export const WRITABLE_TOGGLE_CONTROLS = new Set(['nightmode', 'partymode', 'supercool', 'superfrost']);
@@ -35,6 +35,12 @@ export type WritableControl =
 			deviceId: string;
 			controlName: string;
 			zoneId?: number;
+	  }
+	| {
+			kind: 'icemaker';
+			deviceId: string;
+			zoneId: number;
+			allowedModes: IceMakerMode[];
 	  };
 
 /** Validated HomeAPI operation produced from a state change. */
@@ -45,6 +51,11 @@ export type ControlWrite =
 			deviceId: string;
 			controlName: string;
 			request: SetToggleRequest;
+	  }
+	| {
+			kind: 'icemaker';
+			deviceId: string;
+			request: SetIceMakerRequest;
 	  };
 
 /** Error caused by an invalid ioBroker value rather than HomeAPI availability. */
@@ -81,6 +92,18 @@ export function createControlWrite(control: WritableControl, value: ioBroker.Sta
 				value,
 				...(zoneScoped ? { zoneId: control.zoneId } : {}),
 			},
+		};
+	}
+
+	if (control.kind === 'icemaker') {
+		if (typeof value !== 'string' || !control.allowedModes.includes(value as IceMakerMode)) {
+			throw new ControlValidationError(`IceMaker mode must be one of: ${control.allowedModes.join(', ')}`);
+		}
+
+		return {
+			kind: 'icemaker',
+			deviceId: control.deviceId,
+			request: { zoneId: control.zoneId, iceMakerMode: value as IceMakerMode },
 		};
 	}
 

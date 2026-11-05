@@ -1,4 +1,10 @@
-import type { LiebherrControl, TemperatureControl, ToggleControl } from './homeApiClient';
+import type {
+	IceMakerControl,
+	IceMakerMode,
+	LiebherrControl,
+	TemperatureControl,
+	ToggleControl,
+} from './homeApiClient';
 import { isWritableToggleControl } from './writeController';
 
 /** Read-only ioBroker state produced from a HomeAPI capability. */
@@ -43,6 +49,20 @@ function isTemperatureControl(control: LiebherrControl): control is TemperatureC
 
 function isToggleControl(control: LiebherrControl): control is ToggleControl {
 	return control.type === 'ToggleControl' && typeof control.value === 'boolean';
+}
+
+function isIceMakerMode(value: unknown): value is IceMakerMode {
+	return value === 'OFF' || value === 'ON' || value === 'MAX_ICE';
+}
+
+function isIceMakerControl(control: LiebherrControl): control is IceMakerControl {
+	return (
+		control.type === 'IceMakerControl' &&
+		isFiniteNumber(control.zoneId) &&
+		isIceMakerMode(control.iceMakerMode) &&
+		typeof control.hasMaxIce === 'boolean' &&
+		(control.hasMaxIce || control.iceMakerMode !== 'MAX_ICE')
+	);
 }
 
 /**
@@ -181,6 +201,40 @@ export function mapControl(control: LiebherrControl): ControlMapping | undefined
 						controlType: control.type,
 						...(isFiniteNumber(control.zoneId) ? { zoneId: control.zoneId } : {}),
 						...(control.zonePosition !== undefined ? { zonePosition: control.zonePosition } : {}),
+					},
+				},
+			],
+		};
+	}
+
+	if (isIceMakerControl(control)) {
+		const states: Record<string, string> = {
+			OFF: 'Off',
+			ON: 'On',
+			...(control.hasMaxIce ? { MAX_ICE: 'Max Ice' } : {}),
+		};
+		return {
+			scope: 'device',
+			zoneId: control.zoneId,
+			zonePosition: control.zonePosition,
+			states: [
+				{
+					id: toIdSegment(control.name),
+					common: {
+						name: 'IceMaker mode',
+						type: 'string',
+						role: 'level.mode',
+						read: true,
+						write: true,
+						states,
+					},
+					value: control.iceMakerMode,
+					native: {
+						controlName: control.name,
+						controlType: control.type,
+						zoneId: control.zoneId,
+						...(control.zonePosition !== undefined ? { zonePosition: control.zonePosition } : {}),
+						hasMaxIce: control.hasMaxIce,
 					},
 				},
 			],

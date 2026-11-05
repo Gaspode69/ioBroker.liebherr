@@ -394,6 +394,13 @@ class Liebherr extends utils.Adapter {
         controlName: native.controlName,
         ...typeof native.zoneId === "number" ? { zoneId: native.zoneId } : {}
       };
+    } else if (native.controlType === "IceMakerControl" && state.id === "icemaker" && typeof native.zoneId === "number" && typeof native.hasMaxIce === "boolean") {
+      control = {
+        kind: "icemaker",
+        deviceId,
+        zoneId: native.zoneId,
+        allowedModes: native.hasMaxIce ? ["OFF", "ON", "MAX_ICE"] : ["OFF", "ON"]
+      };
     }
     if (!control) {
       this.log.warn(
@@ -473,8 +480,10 @@ class Liebherr extends utils.Adapter {
   async sendControlWrite(client, operation) {
     if (operation.kind === "temperature") {
       await client.setTemperature(operation.deviceId, operation.request);
-    } else {
+    } else if (operation.kind === "toggle") {
       await client.setToggle(operation.deviceId, operation.controlName, operation.request);
+    } else {
+      await client.setIceMaker(operation.deviceId, operation.request);
     }
   }
   async updateState(id, name, role, type, value) {

@@ -95,6 +95,42 @@ describe('control mapping', () => {
 		expect(superFrostWithoutZone?.states[0].common.write).to.equal(false);
 	});
 
+	it('maps IceMaker modes and only exposes Max Ice when supported', () => {
+		const basic = mapControl({
+			type: 'IceMakerControl',
+			name: 'icemaker',
+			zoneId: 0,
+			zonePosition: 'top',
+			iceMakerMode: 'ON',
+			hasMaxIce: false,
+		});
+		const withMaxIce = mapControl({
+			type: 'IceMakerControl',
+			name: 'icemaker',
+			zoneId: 1,
+			iceMakerMode: 'MAX_ICE',
+			hasMaxIce: true,
+		});
+
+		expect(basic?.scope).to.equal('device');
+		expect(basic?.zoneId).to.equal(0);
+		expect(basic?.states[0]).to.include({ id: 'icemaker', value: 'ON' });
+		expect(basic?.states[0].common).to.include({ type: 'string', role: 'level.mode', write: true });
+		expect(basic?.states[0].common.states).to.deep.equal({ OFF: 'Off', ON: 'On' });
+		expect(basic?.states[0].native).to.deep.equal({
+			controlName: 'icemaker',
+			controlType: 'IceMakerControl',
+			zoneId: 0,
+			zonePosition: 'top',
+			hasMaxIce: false,
+		});
+		expect(withMaxIce?.states[0].common.states).to.deep.equal({
+			OFF: 'Off',
+			ON: 'On',
+			MAX_ICE: 'Max Ice',
+		});
+	});
+
 	it('ignores unknown future and malformed known controls safely', () => {
 		const futureControl = { type: 'FutureControl', name: 'future', value: 'new' } as LiebherrControl;
 		const malformedTemperature = {
@@ -103,9 +139,17 @@ describe('control mapping', () => {
 			zoneId: 0,
 			value: 'not-a-number',
 		} as unknown as LiebherrControl;
+		const malformedIceMaker = {
+			type: 'IceMakerControl',
+			name: 'icemaker',
+			zoneId: 0,
+			iceMakerMode: 'MAX_ICE',
+			hasMaxIce: false,
+		} as LiebherrControl;
 
 		expect(mapControl(futureControl)).to.equal(undefined);
 		expect(mapControl(malformedTemperature)).to.equal(undefined);
+		expect(mapControl(malformedIceMaker)).to.equal(undefined);
 	});
 
 	it('creates stable object ID segments without interpreting serial-number dots as hierarchy', () => {

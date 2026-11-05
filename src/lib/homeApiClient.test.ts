@@ -186,6 +186,19 @@ describe('HomeApiClient', () => {
 		expect(requestBody(fetch.secondCall.args[1]?.body)).to.deep.equal({ zoneId: 0, value: false });
 	});
 
+	it('writes IceMaker modes with the documented request body', async () => {
+		const fetch = sinon.stub<Parameters<FetchLike>, ReturnType<FetchLike>>();
+		fetch.resolves(new Response(null, { status: 204 }));
+		const client = new HomeApiClient('test-key', { fetch });
+
+		await client.setIceMaker('12/34', { zoneId: 0, iceMakerMode: 'MAX_ICE' });
+
+		const [url, init] = fetch.firstCall.args;
+		expect(requestUrl(url)).to.match(/\/v1\/devices\/12%2F34\/controls\/icemaker$/);
+		expect(init?.method).to.equal('POST');
+		expect(requestBody(init?.body)).to.deep.equal({ zoneId: 0, iceMakerMode: 'MAX_ICE' });
+	});
+
 	for (const status of [401, 403, 404, 412, 422, 429, 500, 503]) {
 		it(`returns a typed error for HTTP ${status}`, async () => {
 			const fetch = sinon.stub<Parameters<FetchLike>, ReturnType<FetchLike>>();

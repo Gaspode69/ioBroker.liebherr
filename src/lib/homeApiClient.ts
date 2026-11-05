@@ -58,7 +58,22 @@ export interface TemperatureControl extends BaseControl {
 	setTemperatureStepsEnabled?: boolean;
 }
 
-export type LiebherrControl = TemperatureControl | ToggleControl | BaseControl;
+/** Modes supported by an IceMaker capability. */
+export type IceMakerMode = 'OFF' | 'ON' | 'MAX_ICE';
+
+/** IceMaker capability for one appliance zone. */
+export interface IceMakerControl extends BaseControl {
+	/** IceMaker control discriminator. */
+	type: 'IceMakerControl';
+	/** Appliance zone containing the IceMaker. */
+	zoneId: number;
+	/** Current IceMaker operating mode. */
+	iceMakerMode: IceMakerMode;
+	/** Whether the appliance supports the MAX_ICE mode. */
+	hasMaxIce: boolean;
+}
+
+export type LiebherrControl = TemperatureControl | ToggleControl | IceMakerControl | BaseControl;
 
 export type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
@@ -133,6 +148,14 @@ export interface SetToggleRequest {
 	value: boolean;
 	/** Zone required by zone-associated controls. */
 	zoneId?: number;
+}
+
+/** Body accepted by the HomeAPI IceMaker endpoint. */
+export interface SetIceMakerRequest {
+	/** Appliance zone containing the IceMaker. */
+	zoneId: number;
+	/** Requested IceMaker operating mode. */
+	iceMakerMode: IceMakerMode;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -380,6 +403,16 @@ export class HomeApiClient {
 		);
 	}
 
+	/**
+	 * Sets the IceMaker mode for one appliance zone.
+	 *
+	 * @param deviceId Appliance identifier returned by getDevices.
+	 * @param request Validated IceMaker request.
+	 */
+	public async setIceMaker(deviceId: string, request: SetIceMakerRequest): Promise<void> {
+		await this.post(`/v1/devices/${encodeURIComponent(deviceId)}/controls/icemaker`, request);
+	}
+
 	private async get(path: string): Promise<unknown> {
 		const response = await this.request(path, { method: 'GET' });
 
@@ -390,7 +423,10 @@ export class HomeApiClient {
 		}
 	}
 
-	private async post(path: string, body: SetTemperatureRequest | SetToggleRequest): Promise<void> {
+	private async post(
+		path: string,
+		body: SetTemperatureRequest | SetToggleRequest | SetIceMakerRequest,
+	): Promise<void> {
 		await this.request(path, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },

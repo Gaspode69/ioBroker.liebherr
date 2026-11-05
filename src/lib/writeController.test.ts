@@ -38,6 +38,32 @@ describe('writable controls', () => {
 		});
 	});
 
+	it('creates documented IceMaker operations and honors Max Ice support', () => {
+		const basic: WritableControl = {
+			kind: 'icemaker',
+			deviceId: 'serial',
+			zoneId: 0,
+			allowedModes: ['OFF', 'ON'],
+		};
+		const withMaxIce: WritableControl = {
+			...basic,
+			allowedModes: ['OFF', 'ON', 'MAX_ICE'],
+		};
+
+		expect(createControlWrite(basic, 'ON')).to.deep.equal({
+			kind: 'icemaker',
+			deviceId: 'serial',
+			request: { zoneId: 0, iceMakerMode: 'ON' },
+		});
+		expect(createControlWrite(withMaxIce, 'MAX_ICE')).to.deep.equal({
+			kind: 'icemaker',
+			deviceId: 'serial',
+			request: { zoneId: 0, iceMakerMode: 'MAX_ICE' },
+		});
+		expect(() => createControlWrite(basic, 'MAX_ICE')).to.throw(ControlValidationError);
+		expect(() => createControlWrite(withMaxIce, true)).to.throw(ControlValidationError);
+	});
+
 	it('rejects wrong types, out-of-range values, and disallowed steps', () => {
 		expect(() => createControlWrite(temperature, 'cold')).to.throw(ControlValidationError);
 		expect(() => createControlWrite(temperature, -30)).to.throw(ControlValidationError);

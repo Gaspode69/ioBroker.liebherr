@@ -60,6 +60,16 @@ function createControlWrite(control, value) {
       }
     };
   }
+  if (control.kind === "icemaker") {
+    if (typeof value !== "string" || !control.allowedModes.includes(value)) {
+      throw new ControlValidationError(`IceMaker mode must be one of: ${control.allowedModes.join(", ")}`);
+    }
+    return {
+      kind: "icemaker",
+      deviceId: control.deviceId,
+      request: { zoneId: control.zoneId, iceMakerMode: value }
+    };
+  }
   if (typeof value !== "number" || !Number.isFinite(value)) {
     throw new ControlValidationError("Target temperature must be a finite number");
   }

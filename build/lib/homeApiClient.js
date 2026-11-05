@@ -256,6 +256,15 @@ class HomeApiClient {
       request
     );
   }
+  /**
+   * Sets the IceMaker mode for one appliance zone.
+   *
+   * @param deviceId Appliance identifier returned by getDevices.
+   * @param request Validated IceMaker request.
+   */
+  async setIceMaker(deviceId, request) {
+    await this.post(`/v1/devices/${encodeURIComponent(deviceId)}/controls/icemaker`, request);
+  }
   async get(path) {
     const response = await this.request(path, { method: "GET" });
     try {
